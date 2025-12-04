@@ -43,27 +43,28 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @yield('nav_datasets_active')" href="{{ url('/datasets') }}">
-                                Moje datasety
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link @yield('nav_upload_active')" href="{{ url('/upload') }}">
                                 Nahrať dataset
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link @yield('nav_admin_active')" href="{{ url('/admin') }}">
-                                Administrácia
-                            </a>
-                        </li>
                     </ul>
 
-                    {{-- Right: Prihlásenie --}}
-                    <div class="d-flex">
-                        <a href="{{ url('/login') }}" class="btn btn-primary rounded-pill">
-                            Prihlásenie
-                        </a>
+                    {{-- Right: Auth-aware actions --}}
+                    <div class="d-flex align-items-center gap-2">
+                        @if (Auth::check())
+                            <span class="navbar-text me-2">Vitaj, {{ Auth::user()->username }}</span>
+                            <a href="{{ url('/datasets') }}" class="btn btn-outline-primary">Moje datasety</a>
+                            @if (Auth::user()->role === 'admin')
+                                <a href="{{ url('/admin') }}" class="btn btn-outline-secondary">Administrácia</a>
+                            @endif
+                            <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-danger">Odhlásiť</button>
+                            </form>
+                        @else
+                            <a href="{{ route('login.show') }}" class="btn btn-primary rounded-pill">Prihlásenie</a>
+                            <a href="{{ route('register.show') }}" class="btn btn-outline-primary rounded-pill">Registrácia</a>
+                        @endif
                     </div>
                 </div>
             </div>
