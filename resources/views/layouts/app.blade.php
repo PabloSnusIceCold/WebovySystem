@@ -55,7 +55,7 @@
                             <span class="navbar-text me-2">Vitaj, {{ Auth::user()->username }}</span>
                             <a href="{{ url('/datasets') }}" class="btn btn-outline-primary">Moje datasety</a>
                             @if (Auth::user()->role === 'admin')
-                                <a href="{{ url('/admin') }}" class="btn btn-outline-secondary">Administrácia</a>
+                                <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary">Administrácia</a>
                             @endif
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                 @csrf

@@ -54,7 +54,7 @@ class UserController extends Controller
             'role' => $data['role'] ?? 'user',
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'Používateľ bol vytvorený.');
+        return redirect()->route('admin.users')->with('success', 'Používateľ bol vytvorený.');
     }
 
     /**
@@ -102,7 +102,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect()->route('admin.users.index')->with('success', 'Používateľ bol upravený.');
+        return redirect()->route('admin.users')->with('success', 'Používateľ bol upravený.');
     }
 
     /**
@@ -112,7 +112,6 @@ class UserController extends Controller
     {
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('success', 'Používateľ bol odstránený.');
+        return redirect()->route('admin.users')->with('success', 'Používateľ bol odstránený.');
     }
 }
-
