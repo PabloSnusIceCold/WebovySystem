@@ -42,11 +42,13 @@
                                 Domov
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link @yield('nav_upload_active')" href="{{ url('/upload') }}">
-                                Nahrať dataset
-                            </a>
-                        </li>
+                        @auth
+                            <li class="nav-item">
+                                <a class="nav-link @yield('nav_upload_active')" href="{{ route('datasets.upload') }}">
+                                    Nahrať dataset
+                                </a>
+                            </li>
+                        @endauth
                     </ul>
 
                     {{-- Right: Auth-aware actions --}}

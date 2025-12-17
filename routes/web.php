@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\DatasetController;
 
 
 Route::view('/', 'home')->name('home');
@@ -24,6 +25,12 @@ Route::post('/logout', function () {
     request()->session()->regenerateToken();
     return redirect()->route('home');
 })->name('logout');
+
+// Dataset upload routes (auth only)
+Route::middleware('auth')->group(function () {
+    Route::get('/datasets/upload', [DatasetController::class, 'uploadForm'])->name('datasets.upload');
+    Route::post('/datasets/upload', [DatasetController::class, 'upload'])->name('datasets.upload.post');
+});
 
 // Admin routes protected by auth and admin middleware
 Route::middleware(['auth', 'admin'])->group(function () {
