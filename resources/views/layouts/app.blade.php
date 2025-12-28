@@ -44,6 +44,11 @@
                         </li>
                         @auth
                             <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('datasets.index') ? 'active' : '' }}" href="{{ route('datasets.index') }}">
+                                    Moje datasety
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link @yield('nav_upload_active')" href="{{ route('datasets.upload') }}">
                                     Nahrať dataset
                                 </a>
@@ -55,7 +60,6 @@
                     <div class="d-flex align-items-center gap-2">
                         @if (Auth::check())
                             <span class="navbar-text me-2">Vitaj, {{ Auth::user()->username }}</span>
-                            <a href="{{ url('/datasets') }}" class="btn btn-outline-primary">Moje datasety</a>
                             @if (Auth::user()->role === 'admin')
                                 <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary">Administrácia</a>
                             @endif

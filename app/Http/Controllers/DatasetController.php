@@ -9,6 +9,18 @@ use Illuminate\Support\Facades\Auth;
 class DatasetController extends Controller
 {
     /**
+     * List datasets for the currently authenticated user.
+     */
+    public function index()
+    {
+        $datasets = Dataset::where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
+        return view('datasets.index', compact('datasets'));
+    }
+
+    /**
      * Show the dataset upload form.
      */
     public function uploadForm()

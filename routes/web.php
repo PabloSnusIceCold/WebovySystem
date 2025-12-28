@@ -26,8 +26,10 @@ Route::post('/logout', function () {
     return redirect()->route('home');
 })->name('logout');
 
-// Dataset upload routes (auth only)
+// Dataset routes (auth only)
 Route::middleware('auth')->group(function () {
+    Route::get('/datasets', [DatasetController::class, 'index'])->name('datasets.index');
+
     Route::get('/datasets/upload', [DatasetController::class, 'uploadForm'])->name('datasets.upload');
     Route::post('/datasets/upload', [DatasetController::class, 'upload'])->name('datasets.upload.post');
 });
