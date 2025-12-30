@@ -32,6 +32,13 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/datasets/upload', [DatasetController::class, 'uploadForm'])->name('datasets.upload');
     Route::post('/datasets/upload', [DatasetController::class, 'upload'])->name('datasets.upload.post');
+
+    Route::get('/datasets/{id}', [DatasetController::class, 'show'])->name('datasets.show');
+    Route::get('/datasets/{id}/edit', [DatasetController::class, 'edit'])->name('datasets.edit');
+    Route::put('/datasets/{id}', [DatasetController::class, 'update'])->name('datasets.update');
+    Route::delete('/datasets/{id}', [DatasetController::class, 'destroy'])->name('datasets.destroy');
+
+    Route::post('/datasets/{id}/share', [DatasetController::class, 'share'])->name('datasets.share');
 });
 
 // Admin routes protected by auth and admin middleware

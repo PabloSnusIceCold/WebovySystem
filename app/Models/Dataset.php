@@ -14,6 +14,8 @@ class Dataset extends Model
         'name',
         'description',
         'file_path',
+        'file_type',
+        'file_size',
     ];
 
     public function user()
