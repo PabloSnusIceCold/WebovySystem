@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Dataset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class DatasetController extends Controller
 {
@@ -133,5 +134,35 @@ class DatasetController extends Controller
 
         // TODO: implement real sharing
         return back()->with('info', 'Funkcia zatiaľ nie je implementovaná.');
+    }
+
+    /**
+     * Download dataset file.
+     * Allowed if dataset is public or belongs to current user.
+     */
+    public function download(int $id)
+    {
+        $dataset = Dataset::where('id', $id)->firstOrFail();
+
+        $isOwner = Auth::check() && (int) $dataset->user_id === (int) Auth::id();
+        if (!$dataset->is_public && !$isOwner) {
+            abort(403);
+        }
+
+        if (!Storage::exists($dataset->file_path)) {
+            abort(404);
+        }
+
+        $downloadName = ($dataset->name ?: 'dataset');
+        $downloadName = preg_replace('/[^A-Za-z0-9_\-. ]+/', '', $downloadName) ?: 'dataset';
+
+        $ext = strtolower((string) $dataset->file_type);
+        $ext = match ($ext) {
+            'csv', 'txt', 'json', 'xlsx' => $ext,
+            default => '',
+        };
+        $filename = trim($downloadName . ($ext ? '.' . $ext : ''));
+
+        return Storage::download($dataset->file_path, $filename);
     }
 }

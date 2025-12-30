@@ -6,9 +6,10 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DatasetController;
+use App\Http\Controllers\HomeController;
 
 
-Route::view('/', 'home')->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Register routes
 Route::get('/register', [RegisterController::class, 'showForm'])->name('register.show');
@@ -40,6 +41,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/datasets/{id}/share', [DatasetController::class, 'share'])->name('datasets.share');
 });
+
+// Public download route (public datasets, or owner can download)
+Route::get('/datasets/{id}/download', [DatasetController::class, 'download'])->name('datasets.download');
 
 // Admin routes protected by auth and admin middleware
 Route::middleware(['auth', 'admin'])->group(function () {
