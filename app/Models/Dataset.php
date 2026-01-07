@@ -14,6 +14,7 @@ class Dataset extends Model
     protected $fillable = [
         'user_id',
         'is_public',
+        'share_token',
         'name',
         'description',
         'file_path',

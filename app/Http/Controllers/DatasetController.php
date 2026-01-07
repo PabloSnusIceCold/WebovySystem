@@ -6,6 +6,7 @@ use App\Models\Dataset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class DatasetController extends Controller
 {
@@ -137,7 +138,7 @@ class DatasetController extends Controller
     }
 
     /**
-     * Placeholder share action.
+     * Generate and return the share URL for a dataset.
      */
     public function share(int $id)
     {
@@ -145,23 +146,68 @@ class DatasetController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        // TODO: implement real sharing
-        return back()->with('info', 'Funkcia zatiaľ nie je implementovaná.');
+        if (empty($dataset->share_token)) {
+            $dataset->share_token = (string) Str::uuid();
+            $dataset->save();
+        }
+
+        $shareUrl = url('/datasets/share/' . $dataset->share_token);
+
+        return back()->with('share_url', $shareUrl);
+    }
+
+    /**
+     * Show a dataset via share token.
+     *
+     * Guests are allowed to view the page.
+     * If the dataset is private, access is still granted via possession of the token.
+     */
+    public function shareShow(string $token)
+    {
+        $dataset = Dataset::with('user')->where('share_token', $token)->firstOrFail();
+
+        // Mark this dataset as shared for this browser/session so downloads can be allowed.
+        session(['shared_dataset_' . $dataset->id => true]);
+
+        return view('datasets.share', compact('dataset'));
     }
 
     /**
      * Download dataset file.
-     * Allowed if dataset is public or belongs to current user.
+     * - public: anyone can download
+     * - private: owner/admin OR user who opened via valid share token (session flag)
      */
     public function download(int $id)
     {
         $dataset = Dataset::where('id', $id)->firstOrFail();
 
+        // Public datasets: anyone can download.
+        if ($dataset->is_public) {
+            if (!Storage::exists($dataset->file_path)) {
+                abort(404);
+            }
+
+            $downloadName = ($dataset->name ?: 'dataset');
+            $downloadName = preg_replace('/[^A-Za-z0-9_\-. ]+/', '', $downloadName) ?: 'dataset';
+
+            $ext = strtolower((string) $dataset->file_type);
+            $ext = match ($ext) {
+                'csv', 'txt', 'json', 'xlsx' => $ext,
+                default => '',
+            };
+            $filename = trim($downloadName . ($ext ? '.' . $ext : ''));
+
+            return Storage::download($dataset->file_path, $filename);
+        }
+
+        // Private dataset: owner/admin or valid share-session can download.
+        $sharedInSession = session()->has('shared_dataset_' . $dataset->id);
+
         $user = Auth::user();
         $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
         $isAdmin = $user && ($user->role === 'admin');
 
-        if (!$dataset->is_public && !$isOwner && !$isAdmin) {
+        if (!$isOwner && !$isAdmin && !$sharedInSession) {
             abort(403);
         }
 

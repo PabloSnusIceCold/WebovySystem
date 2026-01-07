@@ -15,6 +15,13 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    @if (session('share_url'))
+        <div class="alert alert-info">
+            <div class="fw-semibold">Tento dataset môžeš zdieľať pomocou odkazu:</div>
+            <a href="{{ session('share_url') }}" target="_blank" rel="noopener" class="text-break">{{ session('share_url') }}</a>
+        </div>
+    @endif
+
     @if (session('info'))
         <div class="alert alert-info">{{ session('info') }}</div>
     @endif

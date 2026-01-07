@@ -6,27 +6,27 @@
     @php
         $sizeBytes = (int) ($dataset->file_size ?? 0);
         $sizeMb = $sizeBytes > 0 ? round($sizeBytes / 1048576, 2) : null;
-
-        $user = auth()->user();
-        $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
-        $isAdmin = $user && ($user->role === 'admin');
-
-        $canDownload = (bool) ($dataset->is_public || $isOwner || $isAdmin);
+        $shareUrl = url('/datasets/share/' . $dataset->share_token);
+        $loginRedirectUrl = url('/login?redirect=' . urlencode($shareUrl));
     @endphp
 
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
-        <h1 class="h3 mb-0">{{ $dataset->name }}</h1>
-
-        <div class="d-flex align-items-center gap-2">
-            @auth
-                @if ($canDownload)
-                    <a href="{{ route('datasets.download', $dataset->id) }}" class="btn btn-primary btn-sm">Stiahnuť</a>
-                @endif
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <h1 class="h3 mb-0">{{ $dataset->name }}</h1>
+            @if ($dataset->is_public)
+                <span class="badge text-bg-success">Verejný</span>
             @else
-                <a href="/login" class="btn btn-primary btn-sm">Prihlásiť sa pre stiahnutie</a>
-            @endauth
+                <span class="badge text-bg-secondary">Súkromný</span>
+            @endif
+        </div>
 
-            <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary btn-sm">Späť</a>
+        <div class="d-flex flex-column align-items-stretch align-items-md-end gap-1">
+            @auth
+                <a href="{{ route('datasets.download', $dataset->id) }}" class="btn btn-primary btn-sm">Stiahnuť</a>
+            @else
+                <a href="{{ $loginRedirectUrl }}" class="btn btn-primary btn-sm">Prihlásiť sa pre stiahnutie</a>
+                <div class="text-muted small">Pre stiahnutie sa musíš prihlásiť.</div>
+            @endauth
         </div>
     </div>
 

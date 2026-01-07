@@ -52,6 +52,11 @@ Route::middleware('auth')->group(function () {
         ->name('datasets.share');
 });
 
+// Share route (token-based) must be defined before /datasets/{id}.
+Route::get('/datasets/share/{token}', [DatasetController::class, 'shareShow'])
+    ->where('token', '[A-Za-z0-9\-]{16,128}')
+    ->name('datasets.share.show');
+
 // Datasets: public routes
 Route::get('/datasets/{id}', [DatasetController::class, 'show'])
     ->whereNumber('id')

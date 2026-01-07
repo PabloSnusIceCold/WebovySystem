@@ -12,7 +12,7 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h1 class="h4 mb-3">Prihlásenie</h1>
-                <form id="loginForm" method="POST" action="{{ route('login.perform') }}" novalidate>
+                <form id="loginForm" method="POST" action="{{ route('login.perform', request()->has('redirect') ? ['redirect' => request()->query('redirect')] : []) }}" novalidate>
                     @csrf
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>

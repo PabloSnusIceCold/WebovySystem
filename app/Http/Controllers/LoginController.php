@@ -22,7 +22,13 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('home');
+
+            $redirect = (string) $request->query('redirect', '');
+            if ($redirect !== '') {
+                return redirect()->to($redirect);
+            }
+
+            return redirect()->intended(route('home'));
         }
 
         return back()->withErrors([
@@ -30,4 +36,3 @@ class LoginController extends Controller
         ])->onlyInput('email');
     }
 }
-
