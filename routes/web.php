@@ -31,19 +31,35 @@ Route::post('/logout', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/datasets', [DatasetController::class, 'index'])->name('datasets.index');
 
+    // Upload routes must be defined before any dynamic /datasets/{id} route
     Route::get('/datasets/upload', [DatasetController::class, 'uploadForm'])->name('datasets.upload');
     Route::post('/datasets/upload', [DatasetController::class, 'upload'])->name('datasets.upload.post');
 
-    Route::get('/datasets/{id}', [DatasetController::class, 'show'])->name('datasets.show');
-    Route::get('/datasets/{id}/edit', [DatasetController::class, 'edit'])->name('datasets.edit');
-    Route::put('/datasets/{id}', [DatasetController::class, 'update'])->name('datasets.update');
-    Route::delete('/datasets/{id}', [DatasetController::class, 'destroy'])->name('datasets.destroy');
+    Route::get('/datasets/{id}/edit', [DatasetController::class, 'edit'])
+        ->whereNumber('id')
+        ->name('datasets.edit');
 
-    Route::post('/datasets/{id}/share', [DatasetController::class, 'share'])->name('datasets.share');
+    Route::put('/datasets/{id}', [DatasetController::class, 'update'])
+        ->whereNumber('id')
+        ->name('datasets.update');
+
+    Route::delete('/datasets/{id}', [DatasetController::class, 'destroy'])
+        ->whereNumber('id')
+        ->name('datasets.destroy');
+
+    Route::post('/datasets/{id}/share', [DatasetController::class, 'share'])
+        ->whereNumber('id')
+        ->name('datasets.share');
 });
 
-// Public download route (public datasets, or owner can download)
-Route::get('/datasets/{id}/download', [DatasetController::class, 'download'])->name('datasets.download');
+// Datasets: public routes
+Route::get('/datasets/{id}', [DatasetController::class, 'show'])
+    ->whereNumber('id')
+    ->name('datasets.show');
+
+Route::get('/datasets/{id}/download', [DatasetController::class, 'download'])
+    ->whereNumber('id')
+    ->name('datasets.download');
 
 // Admin routes protected by auth and admin middleware
 Route::middleware(['auth', 'admin'])->group(function () {

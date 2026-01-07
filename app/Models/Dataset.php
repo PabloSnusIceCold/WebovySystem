@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Dataset extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -17,6 +19,10 @@ class Dataset extends Model
         'file_path',
         'file_type',
         'file_size',
+    ];
+
+    protected $casts = [
+        'is_public' => 'boolean',
     ];
 
     public function user()

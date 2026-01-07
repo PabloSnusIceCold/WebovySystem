@@ -34,7 +34,14 @@
                 <section class="bg-white rounded-3 shadow-sm p-3 p-md-4">
                     <div class="row g-3 align-items-center">
                         <div class="col-12 col-lg-8">
-                            <div class="fw-bold">{{ $dataset->name }}</div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <div class="fw-bold">{{ $dataset->name }}</div>
+                                @if ($dataset->is_public)
+                                    <span class="badge text-bg-success">Verejný</span>
+                                @else
+                                    <span class="badge text-bg-secondary">Súkromný</span>
+                                @endif
+                            </div>
 
                             @if ($dataset->description)
                                 <div class="text-muted small">{{ $dataset->description }}</div>

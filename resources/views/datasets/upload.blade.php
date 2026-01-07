@@ -42,6 +42,20 @@
                         @enderror
                     </div>
 
+                    <div class="form-check mb-3">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="is_public"
+                            id="is_public"
+                            value="1"
+                            {{ old('is_public') ? 'checked' : '' }}
+                        >
+                        <label class="form-check-label" for="is_public">
+                            Dataset je verejný
+                        </label>
+                    </div>
+
                     <button type="submit" class="btn btn-primary">Nahrať</button>
                 </form>
             </div>
@@ -49,4 +63,3 @@
     </div>
 </div>
 @endsection
-

@@ -38,6 +38,8 @@ class DatasetController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'file' => ['required', 'file', 'mimes:csv,txt'],
             'description' => ['nullable', 'string'],
+            // checkbox => optional
+            'is_public' => ['nullable'],
         ]);
 
         $file = $request->file('file');
@@ -53,6 +55,7 @@ class DatasetController extends Controller
 
         Dataset::create([
             'user_id' => Auth::id(),
+            'is_public' => $request->boolean('is_public'),
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'file_path' => $path,
@@ -64,13 +67,23 @@ class DatasetController extends Controller
     }
 
     /**
-     * Show a single dataset (must belong to authenticated user).
+     * Show a single dataset.
+     * - public: visible to anyone
+     * - private: only owner or admin
      */
     public function show(int $id)
     {
-        $dataset = Dataset::where('id', $id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+        $dataset = Dataset::with('user')->findOrFail($id);
+
+        if (!$dataset->is_public) {
+            $user = Auth::user();
+            $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+            $isAdmin = $user && ($user->role === 'admin');
+
+            if (!$isOwner && !$isAdmin) {
+                abort(403);
+            }
+        }
 
         return view('datasets.show', compact('dataset'));
     }
@@ -144,8 +157,11 @@ class DatasetController extends Controller
     {
         $dataset = Dataset::where('id', $id)->firstOrFail();
 
-        $isOwner = Auth::check() && (int) $dataset->user_id === (int) Auth::id();
-        if (!$dataset->is_public && !$isOwner) {
+        $user = Auth::user();
+        $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+        $isAdmin = $user && ($user->role === 'admin');
+
+        if (!$dataset->is_public && !$isOwner && !$isAdmin) {
             abort(403);
         }
 
