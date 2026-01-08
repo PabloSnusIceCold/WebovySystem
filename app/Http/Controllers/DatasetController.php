@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Dataset;
+use App\Models\File;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class DatasetController extends Controller
 {
@@ -42,33 +44,81 @@ class DatasetController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
-            'file' => ['required', 'file', 'mimes:csv,txt'],
+            'files' => ['required', 'array', 'min:1'],
+            'files.*' => [
+                'required',
+                'file',
+                function (string $attribute, $value, $fail) {
+                    if (!$value instanceof \Illuminate\Http\UploadedFile) {
+                        $fail('Neplatný súbor.');
+                        return;
+                    }
+
+                    $ext = strtolower((string) $value->getClientOriginalExtension());
+                    if (!in_array($ext, ['csv', 'txt'], true)) {
+                        $fail('Súbor musí mať príponu CSV alebo TXT.');
+                    }
+                },
+            ],
             'description' => ['nullable', 'string'],
-            // checkbox => optional
             'is_public' => ['nullable'],
         ]);
 
-        $file = $request->file('file');
-        $path = $file->store('datasets');
+        $files = $request->file('files');
 
-        $extension = strtolower((string) $file->getClientOriginalExtension());
-        $fileType = match ($extension) {
+        // We'll create the dataset using the FIRST uploaded file for backward compatibility
+        // (datasets.file_* columns). Then we store each file exactly once and create File rows.
+        $firstFile = $files[0];
+
+        $firstExtension = strtolower((string) $firstFile->getClientOriginalExtension());
+        $firstFileType = match ($firstExtension) {
             'csv' => 'CSV',
             'txt' => 'TXT',
             'json' => 'JSON',
-            default => strtoupper($extension ?: 'N/A'),
+            default => strtoupper($firstExtension ?: 'N/A'),
         };
 
-        Dataset::create([
+        // Store the first file once.
+        $firstPath = $firstFile->store('datasets');
+
+        $dataset = Dataset::create([
             'user_id' => Auth::id(),
             'category_id' => (int) $validated['category_id'],
             'is_public' => $request->boolean('is_public'),
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
-            'file_path' => $path,
-            'file_type' => $fileType,
-            'file_size' => $file->getSize() ?: null,
+            'file_path' => $firstPath,
+            'file_type' => $firstFileType,
+            'file_size' => $firstFile->getSize() ?: null,
         ]);
+
+        // Create File record for the first file.
+        $dataset->files()->create([
+            'file_name' => (string) $firstFile->getClientOriginalName(),
+            'file_type' => (string) $firstFileType,
+            'file_path' => (string) $firstPath,
+            'file_size' => (int) ($firstFile->getSize() ?: 0),
+        ]);
+
+        // Store remaining files (if any).
+        foreach (array_slice($files, 1) as $file) {
+            $path = $file->store('datasets');
+
+            $extension = strtolower((string) $file->getClientOriginalExtension());
+            $fileType = match ($extension) {
+                'csv' => 'CSV',
+                'txt' => 'TXT',
+                'json' => 'JSON',
+                default => strtoupper($extension ?: 'N/A'),
+            };
+
+            $dataset->files()->create([
+                'file_name' => (string) $file->getClientOriginalName(),
+                'file_type' => (string) $fileType,
+                'file_path' => (string) $path,
+                'file_size' => (int) ($file->getSize() ?: 0),
+            ]);
+        }
 
         return back()->with('success', 'Dataset bol úspešne nahraný.');
     }
@@ -80,7 +130,7 @@ class DatasetController extends Controller
      */
     public function show(int $id)
     {
-        $dataset = Dataset::with(['user', 'category'])->findOrFail($id);
+        $dataset = Dataset::with(['user', 'category', 'files'])->findOrFail($id);
 
         if (!$dataset->is_public) {
             $user = Auth::user();
@@ -185,52 +235,104 @@ class DatasetController extends Controller
      */
     public function download(int $id)
     {
-        $dataset = Dataset::where('id', $id)->firstOrFail();
+        // Keep backward compatibility: /datasets/{id}/download now returns ZIP.
+        return $this->downloadZip($id);
+    }
 
-        // Public datasets: anyone can download.
-        if ($dataset->is_public) {
-            if (!Storage::exists($dataset->file_path)) {
-                abort(404);
-            }
+    /**
+     * Download a single file belonging to a dataset.
+     * Access rules:
+     * - public dataset: anyone
+     * - private: owner/admin or shared in session
+     */
+    public function downloadFile(File $file)
+    {
+        $file->loadMissing('dataset');
+        $dataset = $file->dataset;
 
-            $downloadName = ($dataset->name ?: 'dataset');
-            $downloadName = preg_replace('/[^A-Za-z0-9_\-. ]+/', '', $downloadName) ?: 'dataset';
-
-            $ext = strtolower((string) $dataset->file_type);
-            $ext = match ($ext) {
-                'csv', 'txt', 'json', 'xlsx' => $ext,
-                default => '',
-            };
-            $filename = trim($downloadName . ($ext ? '.' . $ext : ''));
-
-            return Storage::download($dataset->file_path, $filename);
-        }
-
-        // Private dataset: owner/admin or valid share-session can download.
-        $sharedInSession = session()->has('shared_dataset_' . $dataset->id);
-
-        $user = Auth::user();
-        $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
-        $isAdmin = $user && ($user->role === 'admin');
-
-        if (!$isOwner && !$isAdmin && !$sharedInSession) {
-            abort(403);
-        }
-
-        if (!Storage::exists($dataset->file_path)) {
+        if (!$dataset) {
             abort(404);
         }
 
-        $downloadName = ($dataset->name ?: 'dataset');
-        $downloadName = preg_replace('/[^A-Za-z0-9_\-. ]+/', '', $downloadName) ?: 'dataset';
+        if (!$dataset->is_public) {
+            $user = Auth::user();
+            $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+            $isAdmin = $user && ($user->role === 'admin');
+            $sharedInSession = session()->has('shared_dataset_' . $dataset->id);
 
-        $ext = strtolower((string) $dataset->file_type);
-        $ext = match ($ext) {
-            'csv', 'txt', 'json', 'xlsx' => $ext,
-            default => '',
-        };
-        $filename = trim($downloadName . ($ext ? '.' . $ext : ''));
+            if (!$isOwner && !$isAdmin && !$sharedInSession) {
+                abort(403);
+            }
+        }
 
-        return Storage::download($dataset->file_path, $filename);
+        if (!Storage::exists($file->file_path)) {
+            abort(404);
+        }
+
+        $downloadName = $file->file_name ?: 'file';
+
+        return Storage::download($file->file_path, $downloadName);
+    }
+
+    /**
+     * Download all dataset files packed as a ZIP.
+     * Access rules are the same as download(): public, owner/admin, or shared in session.
+     */
+    public function downloadZip(int $id)
+    {
+        $dataset = Dataset::with('files')->findOrFail($id);
+
+        if (!$dataset->is_public) {
+            $sharedInSession = session()->has('shared_dataset_' . $dataset->id);
+
+            $user = Auth::user();
+            $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+            $isAdmin = $user && ($user->role === 'admin');
+
+            if (!$isOwner && !$isAdmin && !$sharedInSession) {
+                abort(403);
+            }
+        }
+
+        if ($dataset->files->isEmpty()) {
+            abort(404);
+        }
+
+        $tempDir = 'temp';
+        Storage::makeDirectory($tempDir);
+
+        $safeBase = ($dataset->name ?: 'dataset');
+        $safeBase = preg_replace('/[^A-Za-z0-9_\-. ]+/', '', $safeBase) ?: 'dataset';
+        $zipRelative = $tempDir . '/' . $safeBase . '-' . Str::random(12) . '.zip';
+
+        $zipPath = Storage::path($zipRelative);
+
+        $zip = new \ZipArchive();
+        $opened = $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        if ($opened !== true) {
+            abort(500, 'Nepodarilo sa vytvoriť ZIP.');
+        }
+
+        foreach ($dataset->files as $file) {
+            if (!$file->file_path || !Storage::exists($file->file_path)) {
+                continue;
+            }
+
+            $absolute = Storage::path($file->file_path);
+            $nameInZip = $file->file_name ?: basename($absolute);
+
+            // Avoid duplicate names inside zip
+            if ($zip->locateName($nameInZip) !== false) {
+                $nameInZip = Str::random(6) . '-' . $nameInZip;
+            }
+
+            $zip->addFile($absolute, $nameInZip);
+        }
+
+        $zip->close();
+
+        $downloadZipName = $safeBase . '.zip';
+
+        return response()->download($zipPath, $downloadZipName)->deleteFileAfterSend(true);
     }
 }

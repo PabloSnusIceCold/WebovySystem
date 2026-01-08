@@ -97,8 +97,7 @@
                         return;
                     }
 
-                    const html = await res.text();
-                    cardsContainer.innerHTML = html;
+                    cardsContainer.innerHTML = await res.text();
 
                     // Keep URL in sync (so refresh/share works)
                     window.history.replaceState({}, '', url.toString());

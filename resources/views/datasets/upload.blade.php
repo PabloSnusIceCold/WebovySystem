@@ -55,11 +55,18 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="file" class="form-label">Dataset súbor (CSV alebo TXT)</label>
-                        <input type="file" name="file" id="file" class="form-control @error('file') is-invalid @enderror" required>
-                        @error('file')
+                        <label for="files" class="form-label">Dataset súbory (CSV alebo TXT)</label>
+                        <input type="file" name="files[]" id="files" class="form-control @error('files') is-invalid @enderror" multiple required>
+
+                        @error('files')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+
+                        @if ($errors->has('files.*'))
+                            <div class="invalid-feedback d-block">
+                                {{ $errors->first('files.*') }}
+                            </div>
+                        @endif
                     </div>
 
                     <div class="form-check mb-3">

@@ -36,7 +36,7 @@
 
                         <div class="mt-auto d-flex gap-2">
                             <a href="{{ route('datasets.show', $dataset->id) }}" class="btn btn-outline-primary btn-sm">Detail</a>
-                            <a href="{{ route('datasets.download', $dataset->id) }}" class="btn btn-primary btn-sm">Stiahnuť</a>
+                            <a href="{{ route('datasets.download', $dataset->id) }}" class="btn btn-primary btn-sm">Stiahnuť ZIP</a>
                         </div>
                     </div>
                 </div>
@@ -44,4 +44,3 @@
         @endforeach
     </div>
 @endif
-
