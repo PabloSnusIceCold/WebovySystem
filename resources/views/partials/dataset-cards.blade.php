@@ -12,11 +12,6 @@
 @else
     <div class="row g-3">
         @foreach ($publicDatasets as $dataset)
-            @php
-                $sizeBytes = (int) ($dataset->file_size ?? 0);
-                $sizeMb = $sizeBytes > 0 ? round($sizeBytes / 1048576, 2) : null;
-            @endphp
-
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 shadow-sm rounded-3">
                     <div class="card-body d-flex flex-column">
@@ -29,7 +24,7 @@
                         <div class="mb-3 text-muted small">
                             <div><span class="fw-semibold">Kategória:</span> {{ $dataset->category->name ?? '—' }}</div>
                             <div><span class="fw-semibold">Typ:</span> {{ $dataset->file_type ?? '—' }}</div>
-                            <div><span class="fw-semibold">Veľkosť:</span> {{ $sizeMb !== null ? $sizeMb.' MB' : '—' }}</div>
+                            <div><span class="fw-semibold">Veľkosť:</span> {{ $dataset->total_size_human }}</div>
                             <div><span class="fw-semibold">Dátum:</span> {{ $dataset->created_at?->format('d.m.Y H:i') }}</div>
                             <div><span class="fw-semibold">Používateľ:</span> {{ $dataset->user?->username ?? '—' }}</div>
                         </div>

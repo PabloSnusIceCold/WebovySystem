@@ -18,7 +18,7 @@ class HomeController extends Controller
     {
         $categories = Category::orderBy('name')->get();
 
-        $query = Dataset::with(['user', 'category'])->whereNull('deleted_at');
+        $query = Dataset::with(['user', 'category', 'files'])->whereNull('deleted_at');
 
         // If the DB isn't migrated yet, this column may not exist.
         // In that case we avoid applying visibility filtering to prevent SQL errors.

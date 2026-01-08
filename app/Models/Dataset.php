@@ -41,4 +41,44 @@ class Dataset extends Model
     {
         return $this->hasMany(File::class);
     }
+
+    public function getTotalSizeAttribute(): int
+    {
+        // If relationship is eager-loaded, sum in-memory to avoid extra queries.
+        if ($this->relationLoaded('files')) {
+            return (int) ($this->files->sum(fn ($f) => (int) ($f->file_size ?? 0)) ?? 0);
+        }
+
+        // Fallback: sum in DB.
+        return (int) $this->files()->sum('file_size');
+    }
+
+    public function getTotalSizeMbAttribute(): float
+    {
+        $bytes = (int) ($this->total_size ?? 0);
+
+        if ($bytes <= 0) {
+            return 0.0;
+        }
+
+        return round($bytes / 1048576, 2);
+    }
+
+    public function getTotalSizeHumanAttribute(): string
+    {
+        $bytes = (int) ($this->total_size ?? 0);
+
+        if ($bytes <= 0) {
+            return '0 KB';
+        }
+
+        $kb = $bytes / 1024;
+        $mb = $bytes / 1048576;
+
+        if ($mb < 1) {
+            return rtrim(rtrim(number_format($kb, 2, '.', ''), '0'), '.') . ' KB';
+        }
+
+        return rtrim(rtrim(number_format($mb, 2, '.', ''), '0'), '.') . ' MB';
+    }
 }

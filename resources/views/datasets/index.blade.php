@@ -33,11 +33,6 @@
     @else
         <div class="d-flex flex-column gap-3">
             @foreach ($datasets as $dataset)
-                @php
-                    $sizeBytes = (int) ($dataset->file_size ?? 0);
-                    $sizeMb = $sizeBytes > 0 ? round($sizeBytes / 1048576, 2) : null;
-                @endphp
-
                 <section class="bg-white rounded-3 shadow-sm p-3 p-md-4">
                     <div class="row g-3 align-items-center">
                         <div class="col-12 col-lg-8">
@@ -57,7 +52,7 @@
                             <div class="text-muted small mt-2">
                                 <span class="me-3"><span class="fw-semibold">Kategória:</span> {{ $dataset->category->name ?? '—' }}</span>
                                 <span class="me-3"><span class="fw-semibold">Formát:</span> {{ $dataset->file_type ?? '—' }}</span>
-                                <span class="me-3"><span class="fw-semibold">Veľkosť:</span> {{ $sizeMb !== null ? $sizeMb.' MB' : '—' }}</span>
+                                <span class="me-3"><span class="fw-semibold">Veľkosť:</span> {{ $dataset->total_size_human }}</span>
                                 <span class="text-nowrap"><span class="fw-semibold">Dátum:</span> {{ $dataset->created_at?->format('d.m.Y H:i') }}</span>
                             </div>
                         </div>

@@ -18,7 +18,7 @@ class DatasetController extends Controller
      */
     public function index()
     {
-        $datasets = Dataset::with('category')
+        $datasets = Dataset::with(['category', 'files'])
             ->where('user_id', Auth::id())
             ->latest()
             ->get();
@@ -220,7 +220,7 @@ class DatasetController extends Controller
      */
     public function shareShow(string $token)
     {
-        $dataset = Dataset::with('user')->where('share_token', $token)->firstOrFail();
+        $dataset = Dataset::with(['user', 'files'])->where('share_token', $token)->firstOrFail();
 
         // Mark this dataset as shared for this browser/session so downloads can be allowed.
         session(['shared_dataset_' . $dataset->id => true]);

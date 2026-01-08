@@ -4,9 +4,6 @@
 
 @section('content')
     @php
-        $sizeBytes = (int) ($dataset->file_size ?? 0);
-        $sizeMb = $sizeBytes > 0 ? round($sizeBytes / 1048576, 2) : null;
-
         $user = auth()->user();
         $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
         $isAdmin = $user && ($user->role === 'admin');
@@ -45,7 +42,7 @@
             <dd class="col-sm-9">{{ $dataset->file_type ?: '—' }}</dd>
 
             <dt class="col-sm-3">Veľkosť</dt>
-            <dd class="col-sm-9">{{ $sizeMb !== null ? $sizeMb.' MB' : '—' }}</dd>
+            <dd class="col-sm-9">{{ $dataset->total_size_human }}</dd>
 
             <dt class="col-sm-3">Dátum nahratia</dt>
             <dd class="col-sm-9">{{ $dataset->created_at?->format('d.m.Y H:i') }}</dd>
@@ -73,14 +70,10 @@
                     </thead>
                     <tbody>
                         @foreach ($dataset->files as $file)
-                            @php
-                                $fileSizeBytes = (int) ($file->file_size ?? 0);
-                                $fileSizeMb = $fileSizeBytes > 0 ? round($fileSizeBytes / 1048576, 2) : null;
-                            @endphp
                             <tr>
                                 <td class="fw-semibold">{{ $file->file_name }}</td>
                                 <td class="text-muted">{{ $file->file_type ?: '—' }}</td>
-                                <td class="text-end text-muted">{{ $fileSizeMb !== null ? $fileSizeMb.' MB' : '—' }}</td>
+                                <td class="text-end text-muted">{{ $file->size_human }}</td>
                                 <td class="text-end">
                                     @auth
                                         <a href="{{ route('files.download', $file->id) }}" class="btn btn-outline-primary btn-sm">Stiahnuť súbor</a>
