@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Dataset;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,8 @@ class DatasetController extends Controller
      */
     public function index()
     {
-        $datasets = Dataset::where('user_id', Auth::id())
+        $datasets = Dataset::with('category')
+            ->where('user_id', Auth::id())
             ->latest()
             ->get();
 
@@ -27,7 +29,9 @@ class DatasetController extends Controller
      */
     public function uploadForm()
     {
-        return view('datasets.upload');
+        $categories = Category::orderBy('name')->get();
+
+        return view('datasets.upload', compact('categories'));
     }
 
     /**
@@ -37,6 +41,7 @@ class DatasetController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'category_id' => ['required', 'integer', 'exists:categories,id'],
             'file' => ['required', 'file', 'mimes:csv,txt'],
             'description' => ['nullable', 'string'],
             // checkbox => optional
@@ -56,6 +61,7 @@ class DatasetController extends Controller
 
         Dataset::create([
             'user_id' => Auth::id(),
+            'category_id' => (int) $validated['category_id'],
             'is_public' => $request->boolean('is_public'),
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
@@ -74,7 +80,7 @@ class DatasetController extends Controller
      */
     public function show(int $id)
     {
-        $dataset = Dataset::with('user')->findOrFail($id);
+        $dataset = Dataset::with(['user', 'category'])->findOrFail($id);
 
         if (!$dataset->is_public) {
             $user = Auth::user();

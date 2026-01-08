@@ -27,6 +27,26 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="category_id" class="form-label">Kategória datasetu</label>
+                        <select
+                            name="category_id"
+                            id="category_id"
+                            class="form-select @error('category_id') is-invalid @enderror"
+                            required
+                        >
+                            <option value="" disabled {{ old('category_id') ? '' : 'selected' }}>-- Vyber kategóriu --</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}" {{ (string) old('category_id') === (string) $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('category_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
                         <label for="description" class="form-label">Popis</label>
                         <textarea name="description" id="description" class="form-control @error('description') is-invalid @enderror" rows="3">{{ old('description') }}</textarea>
                         @error('description')

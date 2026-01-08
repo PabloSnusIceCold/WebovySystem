@@ -55,7 +55,7 @@
                             @endif
 
                             <div class="text-muted small mt-2">
-                                <span class="me-3"><span class="fw-semibold">Kategória:</span> —</span>
+                                <span class="me-3"><span class="fw-semibold">Kategória:</span> {{ $dataset->category->name ?? '—' }}</span>
                                 <span class="me-3"><span class="fw-semibold">Formát:</span> {{ $dataset->file_type ?? '—' }}</span>
                                 <span class="me-3"><span class="fw-semibold">Veľkosť:</span> {{ $sizeMb !== null ? $sizeMb.' MB' : '—' }}</span>
                                 <span class="text-nowrap"><span class="fw-semibold">Dátum:</span> {{ $dataset->created_at?->format('d.m.Y H:i') }}</span>

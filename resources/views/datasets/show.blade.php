@@ -35,6 +35,9 @@
             <dt class="col-sm-3">Názov</dt>
             <dd class="col-sm-9">{{ $dataset->name }}</dd>
 
+            <dt class="col-sm-3">Kategória</dt>
+            <dd class="col-sm-9">{{ $dataset->category->name ?? '—' }}</dd>
+
             <dt class="col-sm-3">Popis</dt>
             <dd class="col-sm-9">{{ $dataset->description ?: '—' }}</dd>
 
