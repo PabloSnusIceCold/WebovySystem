@@ -184,13 +184,19 @@ class DatasetController extends Controller
      */
     public function destroy(int $id)
     {
-        $dataset = Dataset::where('id', $id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+        $dataset = Dataset::findOrFail($id);
+
+        $user = Auth::user();
+        $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+        $isAdmin = $user && ($user->role === 'admin');
+
+        if (!$isOwner && !$isAdmin) {
+            abort(403);
+        }
 
         $dataset->delete();
 
-        return redirect()->route('datasets.index')->with('success', 'Dataset bol odstránený.');
+        return back()->with('success', 'Dataset bol úspešne odstránený.');
     }
 
     /**

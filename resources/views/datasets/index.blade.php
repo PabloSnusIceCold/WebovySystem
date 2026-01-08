@@ -31,8 +31,16 @@
             Zatiaľ nemáš nahrané žiadne datasety.
         </div>
     @else
+        @php
+            $currentUser = auth()->user();
+        @endphp
+
         <div class="d-flex flex-column gap-3">
             @foreach ($datasets as $dataset)
+                @php
+                    $canDelete = $currentUser && ((int) $currentUser->id === (int) $dataset->user_id || $currentUser->role === 'admin');
+                @endphp
+
                 <section class="bg-white rounded-3 shadow-sm p-3 p-md-4">
                     <div class="row g-3 align-items-center">
                         <div class="col-12 col-lg-8">
@@ -67,11 +75,13 @@
                                     <button type="submit" class="btn btn-outline-secondary btn-sm">Zdieľať</button>
                                 </form>
 
-                                <form action="{{ route('datasets.destroy', $dataset->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Naozaj chceš odstrániť tento dataset?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">Zmazať</button>
-                                </form>
+                                @if ($canDelete)
+                                    <form action="{{ route('datasets.destroy', $dataset->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Naozaj chceš odstrániť tento dataset?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Zmazať</button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     </div>

@@ -1,6 +1,7 @@
 @php
     /** @var \Illuminate\Support\Collection|\Illuminate\Pagination\LengthAwarePaginator $datasets */
     $publicDatasets = $datasets ?? collect();
+    $currentUser = auth()->user();
 @endphp
 
 @if ($publicDatasets->isEmpty())
@@ -12,6 +13,10 @@
 @else
     <div class="row g-3">
         @foreach ($publicDatasets as $dataset)
+            @php
+                $canDelete = $currentUser && ((int) $currentUser->id === (int) $dataset->user_id || $currentUser->role === 'admin');
+            @endphp
+
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 shadow-sm rounded-3">
                     <div class="card-body d-flex flex-column">
@@ -29,9 +34,17 @@
                             <div><span class="fw-semibold">Používateľ:</span> {{ $dataset->user?->username ?? '—' }}</div>
                         </div>
 
-                        <div class="mt-auto d-flex gap-2">
+                        <div class="mt-auto d-flex flex-wrap gap-2">
                             <a href="{{ route('datasets.show', $dataset->id) }}" class="btn btn-outline-primary btn-sm">Detail</a>
                             <a href="{{ route('datasets.download', $dataset->id) }}" class="btn btn-primary btn-sm">Stiahnuť ZIP</a>
+
+                            @if ($canDelete)
+                                <form action="{{ route('datasets.destroy', $dataset->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Naozaj chceš odstrániť tento dataset?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Zmazať</button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 </div>
