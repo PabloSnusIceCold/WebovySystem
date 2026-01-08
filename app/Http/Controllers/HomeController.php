@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -15,7 +16,9 @@ class HomeController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Dataset::with('user')->whereNull('deleted_at');
+        $categories = Category::orderBy('name')->get();
+
+        $query = Dataset::with(['user', 'category'])->whereNull('deleted_at');
 
         // If the DB isn't migrated yet, this column may not exist.
         // In that case we avoid applying visibility filtering to prevent SQL errors.
@@ -35,6 +38,11 @@ class HomeController extends Controller
             }
         }
 
+        $categoryId = trim((string) $request->query('category_id', ''));
+        if ($categoryId !== '') {
+            $query->where('category_id', $categoryId);
+        }
+
         $search = trim((string) $request->query('search', ''));
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -45,6 +53,10 @@ class HomeController extends Controller
 
         $datasets = $query->latest()->get();
 
-        return view('home', compact('datasets'));
+        if ($request->ajax() || $request->expectsJson()) {
+            return view('partials.dataset-cards', compact('datasets'));
+        }
+
+        return view('home', compact('datasets', 'categories'));
     }
 }
