@@ -55,8 +55,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="files" class="form-label">Dataset súbory (CSV alebo TXT)</label>
-                        <input type="file" name="files[]" id="files" class="form-control @error('files') is-invalid @enderror" multiple required>
+                        <label for="files" class="form-label">Dataset súbory (CSV, TXT, XLSX, JSON, XML, ARFF, ZIP)</label>
+                        <input
+                            type="file"
+                            name="files[]"
+                            id="files"
+                            class="form-control @error('files') is-invalid @enderror"
+                            accept=".csv,.txt,.xlsx,.json,.xml,.arff,.zip"
+                            multiple
+                            required
+                        >
 
                         @error('files')
                             <div class="invalid-feedback">{{ $message }}</div>

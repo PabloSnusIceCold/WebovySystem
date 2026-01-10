@@ -10,6 +10,11 @@
 
         $canDownload = (bool) ($dataset->is_public || $isOwner || $isAdmin);
         $canShare = (bool) ($isOwner || $isAdmin);
+
+        $files = $dataset->files ?? collect();
+        $fileCount = $files->count();
+        $fileTypes = $files->pluck('file_type')->filter()->map(fn ($t) => strtoupper((string) $t))->unique()->values();
+        $fileTypesText = $fileTypes->isEmpty() ? '—' : $fileTypes->implode(', ');
     @endphp
 
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
@@ -78,10 +83,13 @@
             <dt class="col-sm-3">Popis</dt>
             <dd class="col-sm-9">{{ $dataset->description ?: '—' }}</dd>
 
-            <dt class="col-sm-3">Typ súboru</dt>
-            <dd class="col-sm-9">{{ $dataset->file_type ?: '—' }}</dd>
+            <dt class="col-sm-3">Typy súborov</dt>
+            <dd class="col-sm-9">{{ $fileTypesText }}</dd>
 
-            <dt class="col-sm-3">Veľkosť</dt>
+            <dt class="col-sm-3">Počet súborov</dt>
+            <dd class="col-sm-9">{{ $fileCount }}</dd>
+
+            <dt class="col-sm-3">Celková veľkosť</dt>
             <dd class="col-sm-9">{{ $dataset->total_size_human }}</dd>
 
             <dt class="col-sm-3">Dátum nahratia</dt>

@@ -15,6 +15,13 @@
         @foreach ($publicDatasets as $dataset)
             @php
                 $canDelete = $currentUser && ((int) $currentUser->id === (int) $dataset->user_id || $currentUser->role === 'admin');
+
+                $files = $dataset->files ?? collect();
+                $fileCount = $files->count();
+                $fileTypes = $files->pluck('file_type')->filter()->map(fn ($t) => strtoupper((string) $t))->unique()->values();
+                $fileTypesText = $fileTypes->isEmpty()
+                    ? ($dataset->file_type ? strtoupper((string) $dataset->file_type) : '—')
+                    : $fileTypes->implode(', ');
             @endphp
 
             <div class="col-12 col-md-6 col-lg-4">
@@ -28,7 +35,8 @@
 
                         <div class="mb-3 text-muted small">
                             <div><span class="fw-semibold">Kategória:</span> {{ $dataset->category->name ?? '—' }}</div>
-                            <div><span class="fw-semibold">Typ:</span> {{ $dataset->file_type ?? '—' }}</div>
+                            <div><span class="fw-semibold">Typy:</span> {{ $fileTypesText }}</div>
+                            <div><span class="fw-semibold">Súborov:</span> {{ $fileCount }}</div>
                             <div><span class="fw-semibold">Veľkosť:</span> {{ $dataset->total_size_human }}</div>
                             <div><span class="fw-semibold">Dátum:</span> {{ $dataset->created_at?->format('d.m.Y H:i') }}</div>
                             <div><span class="fw-semibold">Používateľ:</span> {{ $dataset->user?->username ?? '—' }}</div>

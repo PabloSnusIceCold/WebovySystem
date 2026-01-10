@@ -5,4 +5,7 @@
 /storage/framework/*
 .idea/
 .phpunit.*
+/storage/framework/views/*
+/storage/framework/cache/*
+/storage/logs/*
 

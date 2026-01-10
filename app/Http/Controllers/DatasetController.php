@@ -41,6 +41,8 @@ class DatasetController extends Controller
      */
     public function upload(Request $request)
     {
+        $allowedExtensions = ['csv', 'txt', 'xlsx', 'json', 'xml', 'arff', 'zip'];
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
@@ -48,15 +50,15 @@ class DatasetController extends Controller
             'files.*' => [
                 'required',
                 'file',
-                function (string $attribute, $value, $fail) {
+                function (string $attribute, $value, $fail) use ($allowedExtensions) {
                     if (!$value instanceof \Illuminate\Http\UploadedFile) {
                         $fail('Neplatný súbor.');
                         return;
                     }
 
                     $ext = strtolower((string) $value->getClientOriginalExtension());
-                    if (!in_array($ext, ['csv', 'txt'], true)) {
-                        $fail('Súbor musí mať príponu CSV alebo TXT.');
+                    if ($ext === '' || !in_array($ext, $allowedExtensions, true)) {
+                        $fail('Nepodporovaný typ súboru. Povolené: ' . strtoupper(implode(', ', $allowedExtensions)) . '.');
                     }
                 },
             ],
@@ -64,7 +66,10 @@ class DatasetController extends Controller
             'is_public' => ['nullable'],
         ]);
 
-        $files = $request->file('files');
+        $files = $request->file('files', []);
+        if (!is_array($files) || count($files) < 1) {
+            return back()->withErrors(['files' => 'Musíš nahrať aspoň 1 súbor.'])->withInput();
+        }
 
         // We'll create the dataset using the FIRST uploaded file for backward compatibility
         // (datasets.file_* columns). Then we store each file exactly once and create File rows.
@@ -74,7 +79,11 @@ class DatasetController extends Controller
         $firstFileType = match ($firstExtension) {
             'csv' => 'CSV',
             'txt' => 'TXT',
+            'xlsx' => 'XLSX',
             'json' => 'JSON',
+            'xml' => 'XML',
+            'arff' => 'ARFF',
+            'zip' => 'ZIP',
             default => strtoupper($firstExtension ?: 'N/A'),
         };
 
@@ -108,7 +117,11 @@ class DatasetController extends Controller
             $fileType = match ($extension) {
                 'csv' => 'CSV',
                 'txt' => 'TXT',
+                'xlsx' => 'XLSX',
                 'json' => 'JSON',
+                'xml' => 'XML',
+                'arff' => 'ARFF',
+                'zip' => 'ZIP',
                 default => strtoupper($extension ?: 'N/A'),
             };
 
