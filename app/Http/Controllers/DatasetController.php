@@ -204,9 +204,23 @@ class DatasetController extends Controller
      */
     public function share(int $id)
     {
-        $dataset = Dataset::where('id', $id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+        // Find dataset by ID first (do not scope by user_id), then authorize.
+        $dataset = Dataset::findOrFail($id);
+
+        $user = Auth::user();
+        $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+        $isAdmin = $user && ($user->role === 'admin');
+
+        if (!$isOwner && !$isAdmin) {
+            if (request()->ajax() || request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Forbidden',
+                ], 403);
+            }
+
+            abort(403);
+        }
 
         if (empty($dataset->share_token)) {
             $dataset->share_token = (string) Str::uuid();
@@ -214,6 +228,14 @@ class DatasetController extends Controller
         }
 
         $shareUrl = url('/datasets/share/' . $dataset->share_token);
+
+        if (request()->ajax() || request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'share_url' => $shareUrl,
+                'token' => $dataset->share_token,
+            ]);
+        }
 
         return back()->with('share_url', $shareUrl);
     }
