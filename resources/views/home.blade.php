@@ -1,49 +1,67 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
-        <div>
-            <h1 class="h3 mb-1">Verejné datasety</h1>
-            <div class="text-muted">
-                Dostupných: {{ isset($datasets) ? $datasets->count() : 0 }} datasetov
+    <div class="container-lg mt-4 mb-4">
+        <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <h1 class="h3 mb-0">Verejné datasety</h1>
+                    <span class="badge rounded-pill text-bg-primary">
+                        {{ isset($datasets) ? $datasets->count() : 0 }}
+                    </span>
+                </div>
+                <div class="text-muted mt-1">
+                    Marketplace datasetov – prehľad verejných datasetov (a tvojich súkromných, ak si prihlásený).
+                </div>
             </div>
         </div>
 
-        <form id="datasetFilterForm" class="w-100" style="max-width: 520px;" method="GET" action="{{ route('home') }}">
-            <div class="row g-2 align-items-end">
-                <div class="col-12 col-md-7">
-                    <label for="datasetSearch" class="form-label text-muted small mb-1">Vyhľadať</label>
-                    <div class="input-group">
-                        <input
-                            id="datasetSearch"
-                            name="search"
-                            type="search"
-                            class="form-control"
-                            placeholder="Hľadať dataset…"
-                            aria-label="Vyhľadať dataset"
-                            value="{{ request('search') }}"
-                        >
-                        <button class="btn btn-outline-secondary" type="submit">Hľadať</button>
+        <div class="card border-0 rounded-4 shadow mb-4">
+            <div class="card-body p-3 p-md-4">
+                <form id="datasetFilterForm" method="GET" action="{{ route('home') }}">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-12 col-lg-6">
+                            <label for="datasetSearch" class="form-label text-muted small mb-1">Vyhľadať</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">🔎</span>
+                                <input
+                                    id="datasetSearch"
+                                    name="search"
+                                    type="search"
+                                    class="form-control"
+                                    placeholder="Hľadať dataset…"
+                                    aria-label="Vyhľadať dataset"
+                                    value="{{ request('search') }}"
+                                >
+                                <button class="btn btn-outline-secondary" type="submit">Hľadať</button>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-4">
+                            <label for="category_id" class="form-label text-muted small mb-1">Kategória</label>
+                            <select id="category_id" name="category_id" class="form-select">
+                                <option value="">Všetky kategórie</option>
+                                @foreach (($categories ?? collect()) as $category)
+                                    <option value="{{ $category->id }}" {{ (string) request('category_id') === (string) $category->id ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-lg-2 d-flex justify-content-lg-end">
+                            <a href="{{ url('/') }}" class="btn btn-outline-secondary w-100 w-lg-auto">
+                                Reset
+                            </a>
+                        </div>
                     </div>
-                </div>
-
-                <div class="col-12 col-md-5">
-                    <label for="category_id" class="form-label text-muted small mb-1">Kategória</label>
-                    <select id="category_id" name="category_id" class="form-select">
-                        <option value="">Všetky kategórie</option>
-                        @foreach (($categories ?? collect()) as $category)
-                            <option value="{{ $category->id }}" {{ (string) request('category_id') === (string) $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                </form>
             </div>
-        </form>
-    </div>
+        </div>
 
-    <div id="datasetCardsContainer">
-        @include('partials.dataset-cards', ['datasets' => $datasets ?? collect()])
+        <div id="datasetCardsContainer">
+            @include('partials.dataset-cards', ['datasets' => $datasets ?? collect()])
+        </div>
     </div>
 
     <script>

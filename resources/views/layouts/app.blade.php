@@ -19,8 +19,8 @@
 <body class="d-flex flex-column min-vh-100">
 
     {{-- NAVBAR --}}
-    <header class="sticky-top shadow-sm bg-white">
-        <nav class="navbar navbar-expand-lg navbar-light bg-white">
+    <header class="sticky-top header-glass shadow-sm">
+        <nav class="navbar navbar-expand-lg">
             <div class="container">
                 {{-- Left: Logo --}}
                 <a class="navbar-brand fw-bold text-primary" href="{{ url('/') }}">
@@ -57,19 +57,19 @@
                     </ul>
 
                     {{-- Right: Auth-aware actions --}}
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
                         @if (Auth::check())
-                            <span class="navbar-text me-2">Vitaj, {{ Auth::user()->username }}</span>
+                            <span class="navbar-text me-2 text-muted">Vitaj, <span class="fw-semibold text-body">{{ Auth::user()->username }}</span></span>
                             @if (Auth::user()->role === 'admin')
-                                <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary">Administrácia</a>
+                                <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary btn-sm">Administrácia</a>
                             @endif
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                 @csrf
-                                <button type="submit" class="btn btn-danger">Odhlásiť</button>
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Odhlásiť</button>
                             </form>
                         @else
-                            <a href="{{ route('login.show') }}" class="btn btn-primary rounded-pill">Prihlásenie</a>
-                            <a href="{{ route('register.show') }}" class="btn btn-outline-primary rounded-pill">Registrácia</a>
+                            <a href="{{ route('login.show') }}" class="btn btn-primary rounded-pill btn-sm">Prihlásenie</a>
+                            <a href="{{ route('register.show') }}" class="btn btn-outline-primary rounded-pill btn-sm">Registrácia</a>
                         @endif
                     </div>
                 </div>
@@ -85,7 +85,7 @@
     </main>
 
     {{-- FOOTER --}}
-    <footer class="border-top py-3 mt-auto bg-white">
+    <footer class="footer-soft py-3 mt-auto">
         <div class="container">
             <p class="mb-0 text-center text-muted">
                 © 2025 Matej Halama
