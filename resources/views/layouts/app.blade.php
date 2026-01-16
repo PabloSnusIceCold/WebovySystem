@@ -61,7 +61,7 @@
                         @if (Auth::check())
                             <span class="navbar-text me-2 text-muted">Vitaj, <span class="fw-semibold text-body">{{ Auth::user()->username }}</span></span>
                             @if (Auth::user()->role === 'admin')
-                                <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary btn-sm">Administrácia</a>
+                                <a href="{{ route('admin') }}" class="btn btn-outline-secondary btn-sm">Administrácia</a>
                             @endif
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                 @csrf

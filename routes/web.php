@@ -7,6 +7,8 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DatasetController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Admin\DatasetController as AdminDatasetController;
+use App\Http\Controllers\Admin\AdminController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -72,6 +74,8 @@ Route::get('/files/{file}/download', [DatasetController::class, 'downloadFile'])
 
 // Admin routes protected by auth and admin middleware
 Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin');
+
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users');
     Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
     Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
@@ -79,3 +83,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('/admin/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
     Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->name('admin.users.delete');
 });
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/datasets', [AdminDatasetController::class, 'index'])->name('datasets.index');
+    Route::get('/datasets/{dataset}/edit', [AdminDatasetController::class, 'edit'])->name('datasets.edit');
+    Route::put('/datasets/{dataset}', [AdminDatasetController::class, 'update'])->name('datasets.update');
+    Route::delete('/datasets/{dataset}', [AdminDatasetController::class, 'destroy'])->name('datasets.destroy');
+});
+
