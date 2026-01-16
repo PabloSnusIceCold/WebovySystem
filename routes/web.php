@@ -9,6 +9,7 @@ use App\Http\Controllers\DatasetController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Admin\DatasetController as AdminDatasetController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\CategoryController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -89,5 +90,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/datasets/{dataset}/edit', [AdminDatasetController::class, 'edit'])->name('datasets.edit');
     Route::put('/datasets/{dataset}', [AdminDatasetController::class, 'update'])->name('datasets.update');
     Route::delete('/datasets/{dataset}', [AdminDatasetController::class, 'destroy'])->name('datasets.destroy');
-});
 
+    // Categories CRUD
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+});

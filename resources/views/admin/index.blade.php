@@ -25,12 +25,21 @@
                 Datasety
             </a>
         </li>
+        <li class="nav-item">
+            <a
+                class="nav-link {{ ($tab ?? 'users') === 'categories' ? 'active' : '' }}"
+                href="{{ url('/admin?tab=categories') }}"
+            >
+                Kategórie
+            </a>
+        </li>
     </ul>
 
     @if (($tab ?? 'users') === 'users')
         @include('admin.partials.users-table', ['users' => $users])
-    @else
+    @elseif (($tab ?? 'users') === 'datasets')
         @include('admin.partials.datasets-table', ['datasets' => $datasets])
+    @else
+        @include('admin.partials.categories-table', ['categories' => $categories])
     @endif
 @endsection
-
