@@ -27,6 +27,7 @@
                     : 'text-bg-danger-subtle border border-danger-subtle text-danger-emphasis';
 
                 $categoryName = $dataset->category->name ?? '—';
+                $downloadCount = (int) ($dataset->download_count ?? 0);
             @endphp
 
             <div class="col-12 col-md-6 col-lg-4">
@@ -80,6 +81,10 @@
                                     <div class="fw-semibold text-body">Používateľ</div>
                                     <div>{{ $dataset->user?->username ?? '—' }}</div>
                                 </div>
+                                <div class="col-12">
+                                    <div class="fw-semibold text-body">Stiahnutí</div>
+                                    <div id="downloadCount-{{ $dataset->id }}">{{ $downloadCount }}</div>
+                                </div>
                             </div>
                         </div>
 
@@ -94,7 +99,8 @@
                                     </a>
                                     <a
                                         href="{{ route('datasets.download', $dataset->id) }}"
-                                        class="btn btn-sm btn-primary rounded-3"
+                                        class="btn btn-sm btn-primary rounded-3 js-zip-download"
+                                        data-dataset-id="{{ $dataset->id }}"
                                     >
                                         Stiahnuť ZIP
                                     </a>

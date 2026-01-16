@@ -16,6 +16,7 @@ class Dataset extends Model
         'category_id',
         'is_public',
         'share_token',
+        'download_count',
         'name',
         'description',
         'file_path',
@@ -25,6 +26,7 @@ class Dataset extends Model
 
     protected $casts = [
         'is_public' => 'boolean',
+        'download_count' => 'integer',
     ];
 
     public function user()

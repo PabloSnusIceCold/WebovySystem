@@ -53,6 +53,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/datasets/{id}/share', [DatasetController::class, 'share'])
         ->whereNumber('id')
         ->name('datasets.share');
+
+    // AJAX: increment download count (JSON only)
+    Route::post('/datasets/{id}/download-count', [DatasetController::class, 'incrementDownloadCount'])
+        ->whereNumber('id')
+        ->name('datasets.downloadCount');
 });
 
 // Share route (token-based) must be defined before /datasets/{id}.

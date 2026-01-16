@@ -7,7 +7,9 @@ use App\Models\File;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -310,6 +312,11 @@ class DatasetController extends Controller
             abort(404);
         }
 
+        // Count a successful authorized download attempt
+        if (Schema::hasColumn('datasets', 'download_count')) {
+            $dataset->increment('download_count');
+        }
+
         $downloadName = $file->file_name ?: 'file';
 
         return Storage::download($file->file_path, $downloadName);
@@ -374,6 +381,47 @@ class DatasetController extends Controller
 
         $downloadZipName = $safeBase . '.zip';
 
+        // Count a successful authorized download attempt
+        if (Schema::hasColumn('datasets', 'download_count')) {
+            $dataset->increment('download_count');
+        }
+
         return response()->download($zipPath, $downloadZipName)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * AJAX endpoint: increment download_count for ZIP download without page reload.
+     * Must NOT return a file, only JSON.
+     */
+    public function incrementDownloadCount(int $id)
+    {
+        $dataset = Dataset::findOrFail($id);
+
+        // Apply the same authorization as downloadZip (public OR owner/admin OR shared in session).
+        if (!$dataset->is_public) {
+            $sharedInSession = session()->has('shared_dataset_' . $dataset->id);
+
+            $user = Auth::user();
+            $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+            $isAdmin = $user && ($user->role === 'admin');
+
+            if (!$isOwner && !$isAdmin && !$sharedInSession) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Forbidden',
+                ], 403);
+            }
+        }
+
+        $dataset->increment('download_count');
+
+        if (config('app.debug')) {
+            Log::info('DOWNLOAD COUNT++ (AJAX) dataset=' . $dataset->id);
+        }
+
+        return response()->json([
+            'success' => true,
+            'download_count' => (int) $dataset->download_count,
+        ]);
     }
 }

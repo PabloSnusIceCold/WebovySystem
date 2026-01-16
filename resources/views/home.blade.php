@@ -142,6 +142,49 @@
                     fetchAndRender();
                 }
             });
+
+            // --- AJAX #2: increment download count when ZIP download is triggered (event delegation) ---
+            document.addEventListener('click', async function (e) {
+                const link = e.target.closest('.js-zip-download');
+                if (!link) return;
+
+                // Let the browser continue with normal download via href.
+                // We only add side-effect: increment download counter asynchronously.
+
+                const datasetId = link.getAttribute('data-dataset-id');
+                if (!datasetId) return;
+
+                const tokenEl = document.querySelector('meta[name="csrf-token"]');
+                const csrfToken = tokenEl ? tokenEl.getAttribute('content') : null;
+
+                try {
+                    const res = await fetch(`/datasets/${datasetId}/download-count`, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+                        },
+                    });
+
+                    if (!res.ok) {
+                        // ignore silently, download still proceeds
+                        return;
+                    }
+
+                    const data = await res.json();
+                    if (!data || data.success !== true) {
+                        return;
+                    }
+
+                    const countEl = document.getElementById(`downloadCount-${datasetId}`);
+                    if (countEl) {
+                        countEl.textContent = String(data.download_count ?? countEl.textContent);
+                    }
+                } catch (err) {
+                    // ignore - download still proceeds
+                }
+            });
         })();
     </script>
 @endsection
