@@ -57,8 +57,8 @@
                             @enderror
                         </div>
 
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.users') }}" class="btn btn-secondary">Zrušiť</a>
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url('/admin?tab=users') }}" class="btn btn-secondary">Zrušiť</a>
                             <button type="submit" class="btn btn-primary">Uložiť</button>
                         </div>
                     </form>
@@ -69,4 +69,3 @@
     </div>
 </div>
 @endsection
-

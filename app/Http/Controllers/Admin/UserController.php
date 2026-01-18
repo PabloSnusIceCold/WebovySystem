@@ -15,7 +15,10 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::query()
+            ->withCount('datasets')
+            ->orderBy('id')
+            ->get();
 
         return view('admin.users.index', compact('users'));
     }
@@ -54,7 +57,7 @@ class UserController extends Controller
             'role' => $data['role'] ?? 'user',
         ]);
 
-        return redirect()->route('admin.users')->with('success', 'Používateľ bol vytvorený.');
+        return redirect('/admin?tab=users')->with('success', 'Používateľ bol vytvorený.');
     }
 
     /**
@@ -102,7 +105,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect()->route('admin.users')->with('success', 'Používateľ bol upravený.');
+        return redirect('/admin?tab=users')->with('success', 'Používateľ bol upravený.');
     }
 
     /**
@@ -112,6 +115,6 @@ class UserController extends Controller
     {
         $user->delete();
 
-        return redirect()->route('admin.users')->with('success', 'Používateľ bol odstránený.');
+        return redirect('/admin?tab=users')->with('success', 'Používateľ bol odstránený.');
     }
 }

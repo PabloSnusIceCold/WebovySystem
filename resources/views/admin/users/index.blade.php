@@ -17,6 +17,8 @@
                         <th scope="col">ID</th>
                         <th scope="col">Username</th>
                         <th scope="col">Email</th>
+                        <th scope="col">Datasety</th>
+                        <th scope="col">Registrácia</th>
                         <th scope="col" class="text-end">Akcie</th>
                     </tr>
                 </thead>
@@ -26,6 +28,8 @@
                             <td>{{ $user->id }}</td>
                             <td>{{ $user->username }}</td>
                             <td>{{ $user->email }}</td>
+                            <td>{{ $user->datasets_count ?? 0 }}</td>
+                            <td>{{ optional($user->created_at)->format('d.m.Y H:i') }}</td>
                             <td class="text-end">
                                 <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
 
@@ -38,7 +42,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center py-4">Žiadni používatelia.</td>
+                            <td colspan="6" class="text-center py-4">Žiadni používatelia.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -47,4 +51,3 @@
     </div>
 </div>
 @endsection
-

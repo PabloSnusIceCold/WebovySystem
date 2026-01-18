@@ -20,8 +20,11 @@ class AdminController extends Controller
             $tab = 'users';
         }
 
-        // Keep existing logic: users list (no pagination yet in current implementation)
-        $users = User::all();
+        // Users list for admin tab
+        $users = User::query()
+            ->withCount('datasets')
+            ->orderBy('id')
+            ->get();
 
         // Dataset list for admin with eager-loading + pagination
         $datasets = Dataset::with(['user', 'category', 'files'])
