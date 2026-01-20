@@ -20,6 +20,12 @@ class AdminController extends Controller
             $tab = 'users';
         }
 
+        $stats = [
+            'users' => (int) User::query()->count(),
+            'datasets' => (int) Dataset::query()->count(),
+            'categories' => (int) Category::query()->count(),
+        ];
+
         // Users list for admin tab
         $users = User::query()
             ->withCount('datasets')
@@ -38,6 +44,6 @@ class AdminController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.index', compact('tab', 'users', 'datasets', 'categories'));
+        return view('admin.index', compact('tab', 'users', 'datasets', 'categories', 'stats'));
     }
 }
