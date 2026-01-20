@@ -24,8 +24,6 @@ POŽIADAVKY
   DB_USERNAME=user
   DB_PASSWORD=user123
 
-Poznámka: .env.example má defaultne SQLite, preto je nutné DB prepnuť na MySQL.
-
 3) Spustenie Docker kontajnerov
 - docker compose up -d --build
 - docker compose ps
