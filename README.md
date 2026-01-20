@@ -34,13 +34,10 @@ POŽIADAVKY
 5) Vygenerovanie aplikačného kľúča
 - docker exec -it webovysystem-app php artisan key:generate
 
-6) Migrácie databázy
-- docker exec -it webovysystem-app php artisan migrate --force
+6) Migrácie + seed testovacích dát (odporúčané)
+- docker exec -it webovysystem-app php artisan migrate:fresh --seed --force
 
-7) Seed databázy (kategórie)
-- docker exec -it webovysystem-app php artisan db:seed --force
-
-8) Vyčistenie cache (odporúčané)
+7) Vyčistenie cache (odporúčané)
 - docker exec -it webovysystem-app php artisan optimize:clear
 
 SPUSTENIE A ODKAZY
@@ -55,10 +52,10 @@ PRIHLÁSENIE / REGISTRÁCIA
 - Registrácia: /register
 - Prihlásenie: /login
 
-ADMIN ROLA
-Projekt používa stĺpec role (user | admin).
-Admin rolu si vieš nastaviť priamo v DB (napr. cez phpMyAdmin):
-- UPDATE users SET role='admin' WHERE email='tvoj@email.com';
+ADMIN účet (seed)
+- username: admin
+- email: admin@example.com
+- password: Admin123!
 
 TROUBLESHOOTING
 
