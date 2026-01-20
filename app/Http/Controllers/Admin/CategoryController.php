@@ -75,5 +75,19 @@ class CategoryController extends Controller
 
         return redirect('/admin?tab=categories')->with('success', 'Kategória bola odstránená.');
     }
-}
 
+    public function show(Category $category)
+    {
+        // datasets_count on category + list of datasets with owner and file counts
+        $category->loadCount('datasets');
+        $category->load([
+            'datasets' => function ($q) {
+                $q->with('user')
+                    ->withCount('files')
+                    ->latest();
+            },
+        ]);
+
+        return view('admin.categories.show', compact('category'));
+    }
+}

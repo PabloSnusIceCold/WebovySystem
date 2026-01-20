@@ -36,6 +36,7 @@
                             <td class="text-end">{{ $category->datasets_count ?? 0 }}</td>
                             <td class="text-muted">{{ $category->created_at?->format('d.m.Y H:i') }}</td>
                             <td class="text-end">
+                                <a href="{{ route('admin.categories.show', $category) }}" class="btn btn-sm btn-outline-primary me-1">Detail</a>
                                 <a href="{{ route('admin.categories.edit', $category) }}" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
 
                                 <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline" onsubmit="return confirm('Naozaj odstrániť kategóriu?');">
@@ -61,4 +62,3 @@
         </div>
     @endif
 @endsection
-
