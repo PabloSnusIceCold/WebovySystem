@@ -8,6 +8,9 @@
     --ws-card-border: rgba(15, 23, 42, 0.06);
     --ws-shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
     --ws-shadow-hover: 0 16px 44px rgba(2, 6, 23, 0.14);
+    --ws-focus-ring: 0 0 0 .25rem rgba(13, 110, 253, 0.18);
+    --ws-surface-bg: rgba(255, 255, 255, 0.92);
+    --ws-surface-border: rgba(15, 23, 42, 0.08);
 }
 
 body {
@@ -181,3 +184,149 @@ h6, .h6 {
     overflow: hidden;
 }
 
+/* =========================
+   Global polish (links + typography)
+   ========================= */
+
+a {
+    color: #0d6efd; /* Bootstrap primary */
+    text-decoration: none;
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1px;
+}
+
+a:hover {
+    color: #0b5ed7;
+    text-decoration: underline;
+}
+
+/* Page/section titles for consistent spacing */
+.ws-page-title {
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    margin-bottom: 0.25rem;
+}
+
+.ws-section-title {
+    font-weight: 600;
+    letter-spacing: 0.15px;
+    margin-bottom: 0.75rem;
+}
+
+/* Card-like surface that sits nicely on gradient background */
+.ws-surface {
+    background: var(--ws-surface-bg);
+    border: 1px solid var(--ws-surface-border);
+    border-radius: 18px;
+    box-shadow: var(--ws-shadow);
+}
+
+/* Utility helpers */
+.ws-muted {
+    color: rgba(33, 37, 41, 0.65) !important;
+}
+
+.ws-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(13, 110, 253, 0.08);
+    border: 1px solid rgba(13, 110, 253, 0.18);
+    color: #0b5ed7;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+}
+
+/* =========================
+   Forms (gentle focus ring + spacing)
+   ========================= */
+
+/* Optional wrapper class for inputs if you want consistent look per-page */
+.ws-form-control {
+    border-radius: 14px;
+}
+
+.form-control:focus {
+    border-color: rgba(13, 110, 253, 0.55);
+    box-shadow: var(--ws-focus-ring);
+}
+
+.form-select:focus {
+    border-color: rgba(13, 110, 253, 0.55);
+    box-shadow: var(--ws-focus-ring);
+}
+
+.form-control::placeholder {
+    color: rgba(33, 37, 41, 0.45);
+}
+
+/* Subtle helper for form sections */
+.ws-form-hint {
+    font-size: 0.875rem;
+    color: rgba(33, 37, 41, 0.6);
+}
+
+/* =========================
+   Tables (opt-in styling via .ws-table)
+   ========================= */
+
+.table.ws-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.table.ws-table thead th {
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: rgba(33, 37, 41, 0.78);
+}
+
+.table.ws-table tbody tr:hover {
+    background: rgba(13, 110, 253, 0.04);
+}
+
+.table.ws-table td,
+.table.ws-table th {
+    vertical-align: middle;
+}
+
+/* =========================
+   Alerts (opt-in)
+   ========================= */
+
+.alert.ws-alert {
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 10px 20px rgba(2, 6, 23, 0.06);
+}
+
+/* =========================
+   Small layout helpers (safe, non-breaking)
+   ========================= */
+
+.ws-hover-lift {
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.ws-hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ws-shadow-hover);
+}
+
+.ws-divider {
+    height: 1px;
+    background: rgba(15, 23, 42, 0.08);
+    border: 0;
+    margin: 1rem 0;
+}
+
+.ws-inline-actions {
+    display: inline-flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
