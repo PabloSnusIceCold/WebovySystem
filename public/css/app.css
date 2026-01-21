@@ -1,6 +1,8 @@
 /*
- * App-level styling (Bootstrap 5 compatible)
- * - keep this file small and focused on polish
+ * Vlastné štýly aplikácie (doplnok k Bootstrap 5)
+ *
+ * Tento súbor je určený hlavne na doladenie vzhľadu (pozadie, karty, hover efekty, focus ringy).
+ * Vlastné triedy majú prefix ws-, aby sa nemiešali s Bootstrapom.
  */
 
 :root {
@@ -18,7 +20,7 @@ body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #212529;
 
-    /* 1) Modern, subtle SaaS background */
+    /* Jemné moderné pozadie: gradient + decentné "svetlá" */
     background:
         radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.12), transparent 45%),
         radial-gradient(circle at 90% 20%, rgba(168, 85, 247, 0.12), transparent 45%),
@@ -28,11 +30,11 @@ body {
     position: relative;
     overflow-x: hidden;
 
-    /* keep space for footer on short pages */
+    /* Rezerva pre footer na krátkych stránkach */
     padding-bottom: 2.5rem;
 }
 
-/* 2) Glow blobs */
+/* Dekoračné "glow" kruhy v pozadí (fixné, neklikateľné) */
 body::before,
 body::after {
     content: "";
@@ -69,7 +71,7 @@ h6, .h6 {
 }
 
 /* =========================
-   Navbar (Bootstrap-first)
+   Navigácia (navbar)
    ========================= */
 .header-glass {
     background: rgba(255, 255, 255, 0.78);
@@ -101,13 +103,13 @@ h6, .h6 {
 }
 
 /* =========================
-   Cards (highlight + hover-lift)
+   Karty (market-card) + hover efekt
    ========================= */
 .market-card {
     border-radius: var(--ws-card-radius) !important;
     border: 1px solid var(--ws-card-border) !important;
 
-    /* white card on gradient, slight transparency */
+    /* biela karta na pozadí s gradientom, mierna priehľadnosť */
     background: rgba(255, 255, 255, 0.95);
 
     box-shadow: var(--ws-shadow);
@@ -119,13 +121,13 @@ h6, .h6 {
     box-shadow: var(--ws-shadow-hover);
 }
 
-/* Better internal spacing for card content */
+/* Lepšie vnútorné odsadenie obsahu karty */
 .market-card .card-body {
     padding: 1.25rem;
 }
 
 /* =========================
-   Badges
+   Odznaky (badges)
    ========================= */
 .badge-soft {
     border-radius: 999px;
@@ -135,7 +137,7 @@ h6, .h6 {
 }
 
 /* =========================
-   Buttons
+   Tlačidlá
    ========================= */
 .btn {
     border-radius: 14px;
@@ -154,7 +156,7 @@ h6, .h6 {
     padding-right: 1.25rem;
 }
 
-/* Homepage dataset card action buttons */
+/* Akčné tlačidlá na kartách datasetov (na home) */
 .ws-card-actions .btn {
     min-height: 36px;
     border-radius: 12px;
@@ -162,14 +164,14 @@ h6, .h6 {
 }
 
 /* =========================
-   Footer
+   Pätička (footer)
    ========================= */
 .footer-soft {
     background: rgba(255, 255, 255, 0.72);
     border-top: 1px solid rgba(15, 23, 42, 0.10);
 }
 
-/* Clamp helpers */
+/* Pomocné "clamp" triedy – orezanie dlhých textov */
 .dataset-title-clamp {
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -185,7 +187,7 @@ h6, .h6 {
 }
 
 /* =========================
-   Global polish (links + typography)
+   Globálne doladenie (linky + typografia)
    ========================= */
 
 a {
@@ -200,7 +202,7 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Page/section titles for consistent spacing */
+/* Nadpisy stránok/sekcií – jednotné odsadenie */
 .ws-page-title {
     font-weight: 700;
     letter-spacing: 0.2px;
@@ -213,7 +215,7 @@ a:hover {
     margin-bottom: 0.75rem;
 }
 
-/* Card-like surface that sits nicely on gradient background */
+/* "Surface" karta, ktorá dobre sedí na gradient pozadí */
 .ws-surface {
     background: var(--ws-surface-bg);
     border: 1px solid var(--ws-surface-border);
@@ -221,7 +223,7 @@ a:hover {
     box-shadow: var(--ws-shadow);
 }
 
-/* Utility helpers */
+/* Pomocné utility triedy */
 .ws-muted {
     color: rgba(33, 37, 41, 0.65) !important;
 }
@@ -240,10 +242,10 @@ a:hover {
 }
 
 /* =========================
-   Forms (gentle focus ring + spacing)
+   Formuláre (jemný focus ring)
    ========================= */
 
-/* Optional wrapper class for inputs if you want consistent look per-page */
+/* Voliteľná trieda pre inputy, ak chceš jednotný viac zaoblený vzhľad */
 .ws-form-control {
     border-radius: 14px;
 }
@@ -262,14 +264,14 @@ a:hover {
     color: rgba(33, 37, 41, 0.45);
 }
 
-/* Subtle helper for form sections */
+/* Jemná nápoveda pod inputmi */
 .ws-form-hint {
     font-size: 0.875rem;
     color: rgba(33, 37, 41, 0.6);
 }
 
 /* =========================
-   Tables (opt-in styling via .ws-table)
+   Tabuľky (zapína sa cez .ws-table)
    ========================= */
 
 .table.ws-table {
@@ -295,7 +297,7 @@ a:hover {
 }
 
 /* =========================
-   Alerts (opt-in)
+   Alerty (zapína sa cez .ws-alert)
    ========================= */
 
 .alert.ws-alert {
@@ -305,7 +307,7 @@ a:hover {
 }
 
 /* =========================
-   Small layout helpers (safe, non-breaking)
+   Malé layout helpery (bezpečné, neinvazívne)
    ========================= */
 
 .ws-hover-lift {
@@ -332,14 +334,15 @@ a:hover {
 }
 
 /* =========================
-   Admin dashboard (custom)
+   Admin dashboard (vlastné)
    ========================= */
 
+/* Obal admin sekcie */
 .ws-admin-wrap {
     position: relative;
 }
 
-/* Hero header card (glass) */
+/* Hero hlavička (glass efekt) */
 .ws-admin-hero {
     border-radius: 22px;
     border: 1px solid rgba(15, 23, 42, 0.10);
@@ -374,7 +377,7 @@ a:hover {
     max-width: 62ch;
 }
 
-/* Cards used in admin (stats + content container) */
+/* Karty používané v admin sekcii (štatistiky + obsah) */
 .ws-admin-card {
     border: 1px solid rgba(15, 23, 42, 0.08);
     border-radius: 18px;
@@ -402,7 +405,7 @@ a:hover {
     border: 1px solid rgba(168, 85, 247, 0.16);
 }
 
-/* Nav pills (tabs) */
+/* Pills taby (nav-pills) */
 .ws-admin-pills {
     gap: 0.5rem;
 }
@@ -433,18 +436,18 @@ a:hover {
     transform: none;
 }
 
-/* Unify small admin buttons a bit (safe: opt-in) */
+/* Jemné zjednotenie malých admin tlačidiel (opt-in cez .ws-btn) */
 .ws-btn {
     border-radius: 999px;
 }
 
-/* Make sure nested cards inside admin content keep a clean dashboard feel */
+/* Udržanie čistého vzhľadu dashboardu pre vnorené karty v admin obsahu */
 .ws-admin-content .card {
     border-radius: 18px;
     border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
-/* Table hover highlight inside admin content */
+/* Zvýraznenie riadkov tabuľky pri hoveri v admin sekcii */
 .ws-admin-content .table tbody tr:hover {
     background: rgba(13, 110, 253, 0.04);
 }

@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Poznámka: Tento controller bol vytvorený/upravený s pomocou AI nástrojov (GitHub Copilot).
+ */
+
 namespace App\Http\Controllers;
 
 use App\Models\Category;
@@ -18,7 +22,7 @@ class HomeController extends Controller
     {
         $categories = Category::orderBy('name')->get();
 
-        $query = Dataset::with(['user', 'category', 'files'])->whereNull('deleted_at');
+        $query = Dataset::with(['user', 'category', 'files']);
 
         // If the DB isn't migrated yet, this column may not exist.
         // In that case we avoid applying visibility filtering to prevent SQL errors.

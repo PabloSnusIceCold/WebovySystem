@@ -1,11 +1,16 @@
 <?php
 
+/**
+ * Poznámka: Tento controller bol vytvorený/upravený s pomocou AI nástrojov (GitHub Copilot).
+ */
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -66,9 +71,23 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        $hasDatasets = $category->datasets()->exists();
-        if ($hasDatasets) {
-            return redirect('/admin?tab=categories')->with('error', 'Kategóriu nie je možné odstrániť, pretože obsahuje datasety.');
+        // Hard delete kategórie + všetkých jej datasetov.
+        // Pozn.: DB cascade nezmaže fyzické súbory, preto to riešime tu.
+        $category->load(['datasets.files']);
+
+        foreach ($category->datasets as $dataset) {
+            foreach ($dataset->files as $file) {
+                if (!empty($file->file_path)) {
+                    Storage::delete($file->file_path);
+                }
+            }
+
+            if (!empty($dataset->file_path)) {
+                Storage::delete($dataset->file_path);
+            }
+
+            $dataset->files()->delete();
+            $dataset->delete();
         }
 
         $category->delete();

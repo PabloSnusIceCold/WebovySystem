@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Poznámka: Tento controller bol vytvorený/upravený s pomocou AI nástrojov (GitHub Copilot).
+ */
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -60,7 +64,7 @@ class DatasetController extends Controller
      * Delete dataset as admin.
      * - delete stored files
      * - delete File rows
-     * - soft-delete dataset (current system)
+     * - hard-delete dataset (new system)
      */
     public function destroy(Dataset $dataset)
     {
@@ -72,14 +76,15 @@ class DatasetController extends Controller
             }
         }
 
-        // Delete DB records for files
-        $dataset->files()->delete();
-
         // Also try to remove legacy single-file path if present
         if (!empty($dataset->file_path)) {
             Storage::delete($dataset->file_path);
         }
 
+        // Delete DB records for files first (if FK cascade exists, this is still safe)
+        $dataset->files()->delete();
+
+        // Hard delete dataset
         $dataset->delete();
 
         return redirect('/admin?tab=datasets')->with('success', 'Dataset bol zmazaný.');

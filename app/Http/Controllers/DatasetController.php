@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Poznámka: Tento controller bol vytvorený/upravený s pomocou AI nástrojov (GitHub Copilot).
+ */
+
 namespace App\Http\Controllers;
 
 use App\Models\Dataset;
@@ -199,7 +203,7 @@ class DatasetController extends Controller
      */
     public function destroy(int $id)
     {
-        $dataset = Dataset::findOrFail($id);
+        $dataset = Dataset::with('files')->findOrFail($id);
 
         $user = Auth::user();
         $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
@@ -209,6 +213,20 @@ class DatasetController extends Controller
             abort(403);
         }
 
+        // Delete physical files in storage (all related files)
+        foreach ($dataset->files as $file) {
+            if (!empty($file->file_path)) {
+                Storage::delete($file->file_path);
+            }
+        }
+
+        // Also remove legacy single-file path if present
+        if (!empty($dataset->file_path)) {
+            Storage::delete($dataset->file_path);
+        }
+
+        // Delete DB records (files first, then dataset)
+        $dataset->files()->delete();
         $dataset->delete();
 
         return back()->with('success', 'Dataset bol úspešne odstránený.');
