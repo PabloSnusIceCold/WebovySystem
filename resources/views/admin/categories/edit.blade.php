@@ -59,7 +59,6 @@
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">Odstrániť kategóriu</button>
-                        <div class="text-muted small mt-2">Mazanie je zablokované, ak kategória obsahuje datasety.</div>
                     </form>
                 </div>
             </div>
