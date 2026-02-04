@@ -66,6 +66,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/repositories/{repository}', [RepositoryController::class, 'show'])
         ->whereNumber('repository')
         ->name('repositories.show');
+
+    // Share repository (generate token + URL)
+    Route::post('/repositories/{repository}/share', [RepositoryController::class, 'share'])
+        ->whereNumber('repository')
+        ->name('repositories.share');
 });
 
 // Share route (token-based) must be defined before /datasets/{id}.
@@ -120,3 +125,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 });
+
+// Public: shared repository via token
+Route::get('/repositories/share/{token}', [RepositoryController::class, 'shareShow'])
+    ->where('token', '[A-Za-z0-9\-]{16,128}')
+    ->name('repositories.share.show');
+

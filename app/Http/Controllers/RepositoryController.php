@@ -83,5 +83,59 @@ class RepositoryController extends Controller
 
         return view('repositories.show', compact('repository'));
     }
-}
 
+    /**
+     * Generate and return the share URL for a repository (owner/admin only).
+     */
+    public function share(Repository $repository, Request $request)
+    {
+        $user = Auth::user();
+        $isOwner = $user && ((int) $repository->user_id === (int) $user->id);
+        $isAdmin = $user && ($user->role === 'admin');
+
+        if (!$isOwner && !$isAdmin) {
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Forbidden',
+                ], 403);
+            }
+
+            abort(403);
+        }
+
+        $token = $repository->ensureShareToken();
+        $shareUrl = url('/repositories/share/' . $token);
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'share_url' => $shareUrl,
+                'token' => $token,
+            ]);
+        }
+
+        return back()->with('share_url', $shareUrl);
+    }
+
+    /**
+     * Public view of a repository via share token.
+     * IMPORTANT: Dataset detail is allowed ONLY for public datasets.
+     */
+    public function shareShow(string $token)
+    {
+        $repository = Repository::query()
+            ->where('share_token', $token)
+            ->withCount('datasets')
+            ->with([
+                'datasets' => function ($q) {
+                    $q->withCount('files')
+                        ->with(['user', 'category'])
+                        ->latest();
+                },
+            ])
+            ->firstOrFail();
+
+        return view('repositories.share', compact('repository'));
+    }
+}
