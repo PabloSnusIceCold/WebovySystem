@@ -77,6 +77,11 @@
             <dt class="col-sm-3">Názov</dt>
             <dd class="col-sm-9">{{ $dataset->name }}</dd>
 
+            <dt class="col-sm-3">Vlastník</dt>
+            <dd class="col-sm-9">
+                {{ $dataset->user?->username ?? $dataset->user?->email ?? '—' }}
+            </dd>
+
             <dt class="col-sm-3">Kategória</dt>
             <dd class="col-sm-9">{{ $dataset->category->name ?? '—' }}</dd>
 

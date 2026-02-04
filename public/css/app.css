@@ -282,6 +282,13 @@ a:hover {
     letter-spacing: 0.1px;
 }
 
+/* --- Compact pills (sm variant) for dense lists --- */
+.ws-pill.ws-pill--sm {
+    background: rgba(15, 23, 42, 0.04);
+    border-color: rgba(15, 23, 42, 0.10);
+    color: rgba(33, 37, 41, 0.78);
+}
+
 /* =========================
    Formuláre (jemný focus ring)
    ========================= */
@@ -491,4 +498,60 @@ a:hover {
 /* Zvýraznenie riadkov tabuľky pri hoveri v admin sekcii */
 .ws-admin-content .table tbody tr:hover {
     background: rgba(13, 110, 253, 0.04);
+}
+
+/* --- Home: list layout (row cards) --- */
+.ws-dataset-row-meta {
+    line-height: 1.35;
+}
+
+.ws-dataset-row-desc {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.ws-dataset-row-actions {
+    max-width: 360px;
+}
+
+@media (max-width: 991.98px) {
+    .ws-dataset-row-actions {
+        max-width: none;
+        justify-content: flex-start !important;
+    }
+}
+
+/* --- Home: list layout (admin-like rows) --- */
+.ws-dataset-line {
+    padding: 1rem 1.25rem;
+}
+
+.ws-dataset-line:hover {
+    background: rgba(13, 110, 253, 0.025);
+}
+
+.ws-dataset-line-desc {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.ws-dataset-line-actions {
+    max-width: 320px;
+}
+
+@media (max-width: 991.98px) {
+    .ws-dataset-line-actions {
+        max-width: none;
+        justify-content: flex-start !important;
+    }
+}
+
+/* Make list rows denser */
+.ws-dataset-line {
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
 }

@@ -53,12 +53,14 @@ class HomeController extends Controller
             }
         }
 
-        $categoryId = trim((string) $request->query('category_id', ''));
+        $isReset = $request->boolean('reset');
+
+        $categoryId = $isReset ? '' : trim((string) $request->query('category_id', ''));
         if ($categoryId !== '') {
             $query->where('category_id', $categoryId);
         }
 
-        $search = trim((string) $request->query('search', ''));
+        $search = $isReset ? '' : trim((string) $request->query('search', ''));
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -107,6 +109,13 @@ class HomeController extends Controller
         }
 
         if ($request->ajax() || $request->expectsJson()) {
+            $layout = (string) $request->query('layout', 'cards');
+            $layout = in_array($layout, ['cards', 'list'], true) ? $layout : 'cards';
+
+            if ($layout === 'list') {
+                return view('partials.dataset-list', compact('datasets'));
+            }
+
             return view('partials.dataset-cards', compact('datasets'));
         }
 
