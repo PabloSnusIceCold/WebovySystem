@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-lg mt-4 mb-4">
+    <div class="mt-4 mb-4">
         <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
             <div>
                 <div class="d-flex align-items-center gap-2 flex-wrap">

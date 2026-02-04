@@ -163,6 +163,47 @@ h6, .h6 {
     white-space: nowrap;
 }
 
+/* Jemné doladenie pre skupiny akcií na kartách */
+.ws-card-actions {
+    border-top: 1px solid rgba(15, 23, 42, 0.06);
+    padding-top: 0.75rem;
+}
+
+.ws-card-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.ws-card-actions .btn.btn-outline-danger {
+    border-color: rgba(220, 53, 69, 0.35);
+}
+
+.ws-card-actions .btn.btn-outline-danger:hover {
+    border-color: rgba(220, 53, 69, 0.55);
+}
+
+/* --- Dataset cards: like button stability --- */
+.ws-card-actions .js-like-toggle {
+    min-width: 108px;
+}
+
+/* --- Dataset cards: delete button in top-right --- */
+.ws-card-delete {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ws-card-delete:hover {
+    background: rgba(220, 53, 69, 0.08);
+}
+
 /* =========================
    Pätička (footer)
    ========================= */

@@ -33,11 +33,31 @@
                 $likedByMe = (bool) ($dataset->liked_by_me ?? false);
             @endphp
 
-            <div class="col-12 col-md-6 col-lg-4">
+            <div class="col-12 col-md-6 col-lg-6">
                 <div class="card h-100 border-0 market-card">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                             <h2 class="h5 mb-0 dataset-title-clamp">{{ $dataset->name }}</h2>
+
+                            @if (auth()->check() && (auth()->user()->role === 'admin' || (int) auth()->id() === (int) $dataset->user_id))
+                                <form
+                                    action="{{ route('datasets.destroy', $dataset->id) }}"
+                                    method="POST"
+                                    class="m-0"
+                                    onsubmit="return confirm('Naozaj chceš odstrániť tento dataset?');"
+                                >
+                                    @csrf
+                                    @method('DELETE')
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-outline-danger rounded-3 ws-card-delete"
+                                        title="Zmazať dataset"
+                                        aria-label="Zmazať dataset"
+                                    >
+                                        ✕
+                                    </button>
+                                </form>
+                            @endif
                         </div>
 
                         <div class="d-flex flex-wrap gap-2 mb-3">
@@ -84,11 +104,13 @@
                                     <div class="fw-semibold text-body">Používateľ</div>
                                     <div>{{ $dataset->user?->username ?? '—' }}</div>
                                 </div>
-                                <div class="col-12">
+
+                                {{-- Stiahnutí + Likov vedľa seba (čistejšie) --}}
+                                <div class="col-6">
                                     <div class="fw-semibold text-body">Stiahnutí</div>
                                     <div id="downloadCount-{{ $dataset->id }}">{{ $downloadCount }}</div>
                                 </div>
-                                <div class="col-12">
+                                <div class="col-6">
                                     <div class="fw-semibold text-body">Likov</div>
                                     <div id="likesCount-{{ $dataset->id }}">{{ $likesCount }}</div>
                                 </div>
@@ -96,21 +118,23 @@
                         </div>
 
                         <div class="mt-auto">
-                            <div class="ws-card-actions d-flex flex-wrap align-items-center gap-2">
-                                <div class="d-flex flex-wrap gap-2">
-                                    <a
-                                        href="{{ route('datasets.show', $dataset->id) }}"
-                                        class="btn btn-sm btn-outline-primary rounded-3"
-                                    >
-                                        Detail
-                                    </a>
-                                    <a
-                                        href="{{ route('datasets.download', $dataset->id) }}"
-                                        class="btn btn-sm btn-primary rounded-3 js-zip-download"
-                                        data-dataset-id="{{ $dataset->id }}"
-                                    >
-                                        Stiahnuť ZIP
-                                    </a>
+                            <div class="ws-card-actions">
+                                <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a
+                                            href="{{ route('datasets.show', $dataset->id) }}"
+                                            class="btn btn-sm btn-outline-primary rounded-3"
+                                        >
+                                            Detail
+                                        </a>
+                                        <a
+                                            href="{{ route('datasets.download', $dataset->id) }}"
+                                            class="btn btn-sm btn-primary rounded-3 js-zip-download"
+                                            data-dataset-id="{{ $dataset->id }}"
+                                        >
+                                            Stiahnuť ZIP
+                                        </a>
+                                    </div>
 
                                     @auth
                                         <button
@@ -123,20 +147,7 @@
                                     @endauth
                                 </div>
 
-                                @if (auth()->check() && (auth()->user()->role === 'admin' || (int) auth()->id() === (int) $dataset->user_id))
-                                    <div class="ms-auto">
-                                        <form
-                                            action="{{ route('datasets.destroy', $dataset->id) }}"
-                                            method="POST"
-                                            class="m-0"
-                                            onsubmit="return confirm('Naozaj chceš odstrániť tento dataset?');"
-                                        >
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-3">Zmazať</button>
-                                        </form>
-                                    </div>
-                                @endif
+                                {{-- Delete je teraz hore v hlavičke karty --}}
                             </div>
                         </div>
                     </div>

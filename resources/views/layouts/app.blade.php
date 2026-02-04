@@ -85,7 +85,7 @@
 
     {{-- HLAVNÝ OBSAH --}}
     <main class="flex-grow-1 py-4">
-        <div class="container">
+        <div class="container-xxl">
             @yield('content')
         </div>
     </main>
