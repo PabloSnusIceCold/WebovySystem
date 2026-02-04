@@ -15,6 +15,7 @@ class Dataset extends Model
         'is_public',
         'share_token',
         'download_count',
+        'likes_count',
         'name',
         'description',
         'file_path',
@@ -25,6 +26,7 @@ class Dataset extends Model
     protected $casts = [
         'is_public' => 'boolean',
         'download_count' => 'integer',
+        'likes_count' => 'integer',
     ];
 
     public function user()
@@ -40,6 +42,11 @@ class Dataset extends Model
     public function files()
     {
         return $this->hasMany(File::class);
+    }
+
+    public function likedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'dataset_likes')->withTimestamps();
     }
 
     public function getTotalSizeAttribute(): int

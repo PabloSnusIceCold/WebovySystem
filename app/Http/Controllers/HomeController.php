@@ -24,8 +24,19 @@ class HomeController extends Controller
 
         $query = Dataset::with(['user', 'category', 'files']);
 
-        // If the DB isn't migrated yet, this column may not exist.
-        // In that case we avoid applying visibility filtering to prevent SQL errors.
+        // Add "liked_by_me" flag when authenticated and the pivot table exists.
+        if (Auth::check()) {
+            $userId = (int) Auth::id();
+            if (Schema::hasTable('dataset_likes')) {
+                $query->withExists([
+                    'likedByUsers as liked_by_me' => function ($q) use ($userId) {
+                        $q->where('users.id', $userId);
+                    },
+                ]);
+            }
+        }
+
+        // Visibility rules (avoid SQL errors if column not present).
         if (Schema::hasColumn('datasets', 'is_public')) {
             if (!Auth::check()) {
                 $query->where('is_public', true);
@@ -57,10 +68,48 @@ class HomeController extends Controller
 
         $datasets = $query->latest()->get();
 
+        // --- Right sidebar: Top lists ---
+        $topDownloads = collect();
+        $topLikes = collect();
+
+        // Base query for top lists: same visibility rules as main query.
+        $topBase = Dataset::query()->with(['category']);
+
+        if (Schema::hasColumn('datasets', 'is_public')) {
+            if (!Auth::check()) {
+                $topBase->where('is_public', true);
+            } else {
+                /** @var User $user */
+                $user = Auth::user();
+                if ($user->role !== 'admin') {
+                    $topBase->where(function ($q) use ($user) {
+                        $q->where('is_public', true)
+                            ->orWhere('user_id', $user->id);
+                    });
+                }
+            }
+        }
+
+        if (Schema::hasColumn('datasets', 'download_count')) {
+            $topDownloads = (clone $topBase)
+                ->orderByDesc('download_count')
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get(['id', 'name', 'category_id', 'download_count', 'is_public']);
+        }
+
+        if (Schema::hasColumn('datasets', 'likes_count')) {
+            $topLikes = (clone $topBase)
+                ->orderByDesc('likes_count')
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get(['id', 'name', 'category_id', 'likes_count', 'is_public']);
+        }
+
         if ($request->ajax() || $request->expectsJson()) {
             return view('partials.dataset-cards', compact('datasets'));
         }
 
-        return view('home', compact('datasets', 'categories'));
+        return view('home', compact('datasets', 'categories', 'topDownloads', 'topLikes'));
     }
 }

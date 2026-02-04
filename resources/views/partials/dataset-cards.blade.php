@@ -28,6 +28,9 @@
 
                 $categoryName = $dataset->category->name ?? '—';
                 $downloadCount = (int) ($dataset->download_count ?? 0);
+                $likesCount = (int) ($dataset->likes_count ?? 0);
+
+                $likedByMe = (bool) ($dataset->liked_by_me ?? false);
             @endphp
 
             <div class="col-12 col-md-6 col-lg-4">
@@ -85,6 +88,10 @@
                                     <div class="fw-semibold text-body">Stiahnutí</div>
                                     <div id="downloadCount-{{ $dataset->id }}">{{ $downloadCount }}</div>
                                 </div>
+                                <div class="col-12">
+                                    <div class="fw-semibold text-body">Likov</div>
+                                    <div id="likesCount-{{ $dataset->id }}">{{ $likesCount }}</div>
+                                </div>
                             </div>
                         </div>
 
@@ -104,6 +111,16 @@
                                     >
                                         Stiahnuť ZIP
                                     </a>
+
+                                    @auth
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm rounded-3 js-like-toggle {{ $likedByMe ? 'btn-primary' : 'btn-outline-primary' }}"
+                                            data-dataset-id="{{ $dataset->id }}"
+                                        >
+                                            {{ $likedByMe ? '👍 Liked' : '👍 Like' }}
+                                        </button>
+                                    @endauth
                                 </div>
 
                                 @if (auth()->check() && (auth()->user()->role === 'admin' || (int) auth()->id() === (int) $dataset->user_id))

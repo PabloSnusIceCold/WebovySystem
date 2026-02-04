@@ -11,6 +11,7 @@ use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\Admin\DatasetController as AdminDatasetController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\DatasetLikeController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -59,6 +60,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/datasets/{id}/download-count', [DatasetController::class, 'incrementDownloadCount'])
         ->whereNumber('id')
         ->name('datasets.downloadCount');
+
+    // Likes (AJAX)
+    Route::post('/datasets/{id}/like/toggle', [DatasetLikeController::class, 'toggle'])
+        ->whereNumber('id')
+        ->name('datasets.like.toggle');
 
     // Repositories (My repositories)
     Route::get('/repositories', [RepositoryController::class, 'index'])->name('repositories.index');
@@ -130,4 +136,3 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::get('/repositories/share/{token}', [RepositoryController::class, 'shareShow'])
     ->where('token', '[A-Za-z0-9\-]{16,128}')
     ->name('repositories.share.show');
-
