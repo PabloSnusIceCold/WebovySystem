@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Repository;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -54,5 +55,10 @@ class User extends Authenticatable
     public function datasets()
     {
         return $this->hasMany(Dataset::class);
+    }
+
+    public function repositories()
+    {
+        return $this->hasMany(Repository::class);
     }
 }

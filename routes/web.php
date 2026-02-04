@@ -7,6 +7,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DatasetController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\Admin\DatasetController as AdminDatasetController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -58,6 +59,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/datasets/{id}/download-count', [DatasetController::class, 'incrementDownloadCount'])
         ->whereNumber('id')
         ->name('datasets.downloadCount');
+
+    // Repositories (My repositories)
+    Route::get('/repositories', [RepositoryController::class, 'index'])->name('repositories.index');
+    Route::post('/repositories', [RepositoryController::class, 'store'])->name('repositories.store');
+    Route::get('/repositories/{repository}', [RepositoryController::class, 'show'])
+        ->whereNumber('repository')
+        ->name('repositories.show');
 });
 
 // Share route (token-based) must be defined before /datasets/{id}.

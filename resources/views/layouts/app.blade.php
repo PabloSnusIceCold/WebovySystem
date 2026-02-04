@@ -50,6 +50,11 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('repositories.*') ? 'active' : '' }}" href="{{ route('repositories.index') }}">
+                                    Moje repozitáre
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link @yield('nav_upload_active')" href="{{ route('datasets.upload') }}">
                                     Nahrať dataset
                                 </a>
