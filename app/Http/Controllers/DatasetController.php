@@ -11,6 +11,7 @@ use App\Models\File;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
@@ -440,6 +441,75 @@ class DatasetController extends Controller
         return response()->json([
             'success' => true,
             'download_count' => (int) $dataset->download_count,
+        ]);
+    }
+
+    /**
+     * AJAX endpoint: toggle like/unlike for a dataset.
+     * - auth required (route group)
+     * - public dataset: any authed user
+     * - private: only owner/admin
+     */
+    public function toggleLike(int $id, Request $request)
+    {
+        $dataset = Dataset::findOrFail($id);
+
+        $user = Auth::user();
+        $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+        $isAdmin = $user && ($user->role === 'admin');
+
+        if (!$dataset->is_public && !$isOwner && !$isAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden',
+            ], 403);
+        }
+
+        $userId = (int) $user->id;
+        $datasetId = (int) $dataset->id;
+
+        $liked = false;
+        $likesCount = (int) ($dataset->likes_count ?? 0);
+
+        DB::transaction(function () use ($userId, $datasetId, &$liked, &$likesCount) {
+            $ds = Dataset::query()->lockForUpdate()->findOrFail($datasetId);
+
+            $exists = DB::table('dataset_likes')
+                ->where('dataset_id', $datasetId)
+                ->where('user_id', $userId)
+                ->exists();
+
+            if ($exists) {
+                DB::table('dataset_likes')
+                    ->where('dataset_id', $datasetId)
+                    ->where('user_id', $userId)
+                    ->delete();
+
+                $ds->likes_count = max(0, (int) ($ds->likes_count ?? 0) - 1);
+                $ds->save();
+
+                $liked = false;
+            } else {
+                DB::table('dataset_likes')->insert([
+                    'dataset_id' => $datasetId,
+                    'user_id' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $ds->likes_count = (int) ($ds->likes_count ?? 0) + 1;
+                $ds->save();
+
+                $liked = true;
+            }
+
+            $likesCount = (int) ($ds->likes_count ?? 0);
+        });
+
+        return response()->json([
+            'success' => true,
+            'liked' => $liked,
+            'likes_count' => $likesCount,
         ]);
     }
 }

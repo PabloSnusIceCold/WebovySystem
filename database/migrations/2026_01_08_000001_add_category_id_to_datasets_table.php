@@ -39,17 +39,28 @@ return new class extends Migration
             ->update(['category_id' => $defaultCategoryId]);
 
         // Fix invalid values (category_id pointing to non-existing categories).
-        // This can happen if a previous partial migration added the column but didn't create categories.
+        // Different SQL dialects need different approach (SQLite doesn't support UPDATE ... JOIN).
+        $driver = (string) DB::connection()->getDriverName();
         $dbName = (string) DB::connection()->getDatabaseName();
 
-        // MySQL-safe update with LEFT JOIN.
-        DB::statement(
-            "UPDATE `datasets` d " .
-            "LEFT JOIN `categories` c ON c.id = d.category_id " .
-            "SET d.category_id = ? " .
-            "WHERE c.id IS NULL",
-            [$defaultCategoryId]
-        );
+        if ($driver === 'mysql') {
+            // MySQL-safe update with LEFT JOIN.
+            DB::statement(
+                "UPDATE `datasets` d " .
+                "LEFT JOIN `categories` c ON c.id = d.category_id " .
+                "SET d.category_id = ? " .
+                "WHERE c.id IS NULL",
+                [$defaultCategoryId]
+            );
+        } else {
+            // SQLite / others: update rows where category_id is not present in categories.
+            $validCategoryIds = DB::table('categories')->pluck('id')->all();
+            if (!empty($validCategoryIds)) {
+                DB::table('datasets')
+                    ->whereNotIn('category_id', $validCategoryIds)
+                    ->update(['category_id' => $defaultCategoryId]);
+            }
+        }
 
         // 3) Make category_id required.
         Schema::table('datasets', function (Blueprint $table) {
@@ -57,6 +68,31 @@ return new class extends Migration
         });
 
         // 4) Add FK + index only if they don't exist.
+        // information_schema doesn't exist on SQLite -> just try to add constraints/indexes.
+        if ($driver !== 'mysql') {
+            // SQLite: foreign keys / indexes are generally safe to attempt (may no-op depending on sqlite config)
+            try {
+                Schema::table('datasets', function (Blueprint $table) {
+                    $table->foreign('category_id')
+                        ->references('id')
+                        ->on('categories')
+                        ->cascadeOnDelete();
+                });
+            } catch (\Throwable $e) {
+                // ignore
+            }
+
+            try {
+                Schema::table('datasets', function (Blueprint $table) {
+                    $table->index('category_id');
+                });
+            } catch (\Throwable $e) {
+                // ignore
+            }
+
+            return;
+        }
+
         $fkExists = DB::table('information_schema.KEY_COLUMN_USAGE')
             ->where('TABLE_SCHEMA', $dbName)
             ->where('TABLE_NAME', 'datasets')

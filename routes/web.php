@@ -11,7 +11,6 @@ use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\Admin\DatasetController as AdminDatasetController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\DatasetLikeController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -61,8 +60,8 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('id')
         ->name('datasets.downloadCount');
 
-    // Likes (AJAX)
-    Route::post('/datasets/{id}/like/toggle', [DatasetLikeController::class, 'toggle'])
+    // Likes (AJAX) - handled inside DatasetController (similarly to download-count)
+    Route::post('/datasets/{id}/like/toggle', [DatasetController::class, 'toggleLike'])
         ->whereNumber('id')
         ->name('datasets.like.toggle');
 

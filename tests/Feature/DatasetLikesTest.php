@@ -13,14 +13,16 @@ class DatasetLikesTest extends TestCase
 
     public function test_guest_cannot_toggle_like(): void
     {
-        $user = User::factory()->create();
+        $owner = User::factory()->create();
         $dataset = Dataset::factory()->create([
-            'user_id' => $user->id,
+            'user_id' => $owner->id,
             'is_public' => true,
             'likes_count' => 0,
         ]);
 
         $res = $this->postJson("/datasets/{$dataset->id}/like/toggle");
+
+        // For JSON requests, Laravel returns 401 when unauthenticated.
         $res->assertStatus(401);
     }
 
@@ -91,4 +93,3 @@ class DatasetLikesTest extends TestCase
         $this->assertSame(0, (int) $dataset->likes_count);
     }
 }
-
