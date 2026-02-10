@@ -76,6 +76,27 @@ Route::middleware('auth')->group(function () {
     Route::post('/repositories/{repository}/share', [RepositoryController::class, 'share'])
         ->whereNumber('repository')
         ->name('repositories.share');
+
+    // AJAX: update dataset from detail page (JSON)
+    Route::put('/datasets/{id}/ajax', [DatasetController::class, 'updateAjax'])
+        ->whereNumber('id')
+        ->name('datasets.update.ajax');
+
+    // AJAX: delete dataset from detail page (JSON)
+    Route::delete('/datasets/{id}/ajax', [DatasetController::class, 'destroyAjax'])
+        ->whereNumber('id')
+        ->name('datasets.destroy.ajax');
+
+    // AJAX: add files to an existing dataset (JSON)
+    Route::post('/datasets/{id}/files/ajax', [DatasetController::class, 'addFilesAjax'])
+        ->whereNumber('id')
+        ->name('datasets.files.add.ajax');
+
+    // AJAX: delete a single file from a dataset (JSON)
+    Route::delete('/datasets/{datasetId}/files/{fileId}/ajax', [DatasetController::class, 'deleteFileAjax'])
+        ->whereNumber('datasetId')
+        ->whereNumber('fileId')
+        ->name('datasets.files.delete.ajax');
 });
 
 // Share route (token-based) must be defined before /datasets/{id}.

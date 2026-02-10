@@ -513,4 +513,211 @@ class DatasetController extends Controller
             'likes_count' => $likesCount,
         ]);
     }
+
+    /**
+     * AJAX: Update dataset from the dataset detail page.
+     * Authorization: owner or admin.
+     */
+    public function updateAjax(Request $request, int $id)
+    {
+        $dataset = Dataset::findOrFail($id);
+
+        $user = Auth::user();
+        $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+        $isAdmin = $user && ($user->role === 'admin');
+
+        if (!$isOwner && !$isAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'is_public' => ['nullable', 'boolean'],
+        ]);
+
+        $dataset->update([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'category_id' => (int) $validated['category_id'],
+            'is_public' => $request->boolean('is_public'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'dataset' => [
+                'id' => (int) $dataset->id,
+                'name' => (string) $dataset->name,
+                'description' => $dataset->description,
+                'category_id' => (int) $dataset->category_id,
+                'is_public' => (bool) $dataset->is_public,
+                'updated_at' => $dataset->updated_at?->toISOString(),
+            ],
+        ]);
+    }
+
+    /**
+     * AJAX: Add one or more files to an existing dataset (owner/admin).
+     */
+    public function addFilesAjax(Request $request, int $id)
+    {
+        $dataset = Dataset::findOrFail($id);
+
+        $user = Auth::user();
+        $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+        $isAdmin = $user && ($user->role === 'admin');
+
+        if (!$isOwner && !$isAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden',
+            ], 403);
+        }
+
+        $allowedExtensions = ['csv', 'txt', 'xlsx', 'json', 'xml', 'arff', 'zip'];
+
+        $request->validate([
+            'files' => ['required', 'array', 'min:1'],
+            'files.*' => [
+                'required',
+                'file',
+                function (string $attribute, $value, $fail) use ($allowedExtensions) {
+                    if (!$value instanceof UploadedFile) {
+                        $fail('Invalid file.');
+                        return;
+                    }
+
+                    $ext = strtolower((string) $value->getClientOriginalExtension());
+                    if ($ext === '' || !in_array($ext, $allowedExtensions, true)) {
+                        $fail('Unsupported file type. Allowed: ' . strtoupper(implode(', ', $allowedExtensions)) . '.');
+                    }
+                },
+            ],
+        ]);
+
+        $uploadedFiles = $request->file('files', []);
+        if (!is_array($uploadedFiles) || count($uploadedFiles) < 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No files uploaded.',
+            ], 422);
+        }
+
+        $created = [];
+
+        foreach ($uploadedFiles as $file) {
+            if (!$file instanceof UploadedFile) {
+                continue;
+            }
+
+            $path = $file->store('datasets');
+
+            $extension = strtolower((string) $file->getClientOriginalExtension());
+            $fileType = match ($extension) {
+                'csv' => 'CSV',
+                'txt' => 'TXT',
+                'xlsx' => 'XLSX',
+                'json' => 'JSON',
+                'xml' => 'XML',
+                'arff' => 'ARFF',
+                'zip' => 'ZIP',
+                default => strtoupper($extension ?: 'N/A'),
+            };
+
+            $row = $dataset->files()->create([
+                'file_name' => (string) $file->getClientOriginalName(),
+                'file_type' => (string) $fileType,
+                'file_path' => (string) $path,
+                'file_size' => (int) ($file->getSize() ?: 0),
+            ]);
+
+            $created[] = [
+                'id' => (int) $row->id,
+                'file_name' => (string) $row->file_name,
+                'file_type' => (string) ($row->file_type ?? ''),
+                'file_size' => (int) ($row->file_size ?? 0),
+                'size_human' => (string) ($row->size_human ?? ''),
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'files' => $created,
+            'files_count' => (int) $dataset->files()->count(),
+        ]);
+    }
+
+    /**
+     * AJAX: Delete a single file from a dataset (owner/admin).
+     */
+    public function deleteFileAjax(int $datasetId, int $fileId)
+    {
+        $dataset = Dataset::with('files')->findOrFail($datasetId);
+
+        $user = Auth::user();
+        $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+        $isAdmin = $user && ($user->role === 'admin');
+
+        if (!$isOwner && !$isAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden',
+            ], 403);
+        }
+
+        $file = $dataset->files()->where('id', $fileId)->firstOrFail();
+
+        if (!empty($file->file_path)) {
+            Storage::delete($file->file_path);
+        }
+
+        $file->delete();
+
+        return response()->json([
+            'success' => true,
+            'files_count' => (int) $dataset->files()->count(),
+        ]);
+    }
+
+    /**
+     * AJAX: Delete dataset from the dataset detail page.
+     * Authorization: owner or admin.
+     */
+    public function destroyAjax(int $id)
+    {
+        $dataset = Dataset::with('files')->findOrFail($id);
+
+        $user = Auth::user();
+        $isOwner = $user && ((int) $dataset->user_id === (int) $user->id);
+        $isAdmin = $user && ($user->role === 'admin');
+
+        if (!$isOwner && !$isAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden',
+            ], 403);
+        }
+
+        foreach ($dataset->files as $file) {
+            if (!empty($file->file_path)) {
+                Storage::delete($file->file_path);
+            }
+        }
+
+        if (!empty($dataset->file_path)) {
+            Storage::delete($dataset->file_path);
+        }
+
+        $dataset->files()->delete();
+        $dataset->delete();
+
+        return response()->json([
+            'success' => true,
+            'redirect_url' => route('home'),
+        ]);
+    }
 }
