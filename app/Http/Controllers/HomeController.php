@@ -68,7 +68,10 @@ class HomeController extends Controller
             });
         }
 
-        $datasets = $query->latest()->get();
+        $datasets = $query
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
         // --- Right sidebar: Top lists ---
         $topDownloads = collect();

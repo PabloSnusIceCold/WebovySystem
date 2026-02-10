@@ -3,7 +3,7 @@
 @section('title', 'My repositories')
 
 @section('content')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
         <div>
             <h1 class="h3 mb-1">My repositories</h1>
             <div class="text-muted small">A repository groups your datasets in one place.</div>
@@ -13,6 +13,15 @@
             Create new repository
         </button>
     </div>
+
+    <form method="GET" action="{{ route('repositories.index') }}" class="mb-4">
+        <div class="input-group">
+            <span class="input-group-text bg-white">🔎</span>
+            <input type="search" name="search" class="form-control" placeholder="Search repositories by name" value="{{ $search ?? request('search') }}">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+            <a class="btn btn-outline-secondary" href="{{ route('repositories.index') }}">Reset</a>
+        </div>
+    </form>
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -50,6 +59,10 @@
                 </div>
             @endforeach
         </div>
+
+        <div class="mt-4 d-flex justify-content-center">
+            {{ $repositories->links() }}
+        </div>
     @endif
 
     {{-- Modal: Create repository --}}
@@ -78,7 +91,7 @@
                             <div class="col-12">
                                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
                                     <div class="fw-semibold">Select datasets for this repository</div>
-                                    <div class="text-muted small">Only your datasets are shown.</div>
+                                    <div class="text-muted small">Only your datasets are shown (paginated).</div>
                                 </div>
 
                                 @if ($datasets->isEmpty())
@@ -117,6 +130,10 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    <div class="mt-3 d-flex justify-content-center">
+                                        {{ $datasets->links() }}
                                     </div>
                                 @endif
                             </div>

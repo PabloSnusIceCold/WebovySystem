@@ -85,4 +85,6 @@
             @endforeach
         </div>
     </div>
+
+    @include('partials.dataset-pagination', ['datasets' => $items])
 @endif

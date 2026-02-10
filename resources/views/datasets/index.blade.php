@@ -3,13 +3,25 @@
 @section('title', 'My datasets')
 
 @section('content')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
-        <h1 class="h3 mb-0">My datasets</h1>
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <h1 class="h3 mb-1">My datasets</h1>
+            <div class="text-muted small">Manage your uploaded datasets.</div>
+        </div>
 
         <a href="{{ route('datasets.upload') }}" class="btn btn-primary">
             Upload new dataset
         </a>
     </div>
+
+    <form method="GET" action="{{ route('datasets.index') }}" class="mb-4">
+        <div class="input-group">
+            <span class="input-group-text bg-white">🔎</span>
+            <input type="search" name="search" class="form-control" placeholder="Search datasets by name/description" value="{{ $search ?? request('search') }}">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+            <a class="btn btn-outline-secondary" href="{{ route('datasets.index') }}">Reset</a>
+        </div>
+    </form>
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -60,6 +72,7 @@
                             <div class="text-muted small mt-2">
                                 <span class="me-3"><span class="fw-semibold">Category:</span> {{ $dataset->category->name ?? '—' }}</span>
                                 <span class="me-3"><span class="fw-semibold">Format:</span> {{ $dataset->file_type ?? '—' }}</span>
+                                <span class="me-3"><span class="fw-semibold">Files:</span> {{ (int) ($dataset->files_count ?? 0) }}</span>
                                 <span class="me-3"><span class="fw-semibold">Size:</span> {{ $dataset->total_size_human }}</span>
                                 <span class="text-nowrap"><span class="fw-semibold">Date:</span> {{ $dataset->created_at?->format('d.m.Y H:i') }}</span>
                             </div>
@@ -87,6 +100,10 @@
                     </div>
                 </section>
             @endforeach
+        </div>
+
+        <div class="mt-4 d-flex justify-content-center">
+            {{ $datasets->links() }}
         </div>
     @endif
 @endsection

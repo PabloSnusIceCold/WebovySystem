@@ -24,14 +24,28 @@ class DatasetController extends Controller
     /**
      * List datasets for the currently authenticated user.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $datasets = Dataset::with(['category', 'files'])
-            ->where('user_id', Auth::id())
-            ->latest()
-            ->get();
+        $search = trim((string) $request->query('search', ''));
 
-        return view('datasets.index', compact('datasets'));
+        $query = Dataset::query()
+            ->with(['category'])
+            ->withCount('files')
+            ->where('user_id', Auth::id());
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+            });
+        }
+
+        $datasets = $query
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('datasets.index', compact('datasets', 'search'));
     }
 
     /**

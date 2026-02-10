@@ -16,20 +16,31 @@ class RepositoryController extends Controller
     /**
      * Zoznam repozitárov prihláseného používateľa.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $repositories = Repository::query()
+        $search = trim((string) $request->query('search', ''));
+
+        $repositoriesQuery = Repository::query()
             ->where('user_id', Auth::id())
             ->withCount('datasets')
-            ->latest()
-            ->get();
+            ->latest();
 
+        if ($search !== '') {
+            $repositoriesQuery->where('name', 'like', '%' . $search . '%');
+        }
+
+        $repositories = $repositoriesQuery
+            ->paginate(20)
+            ->withQueryString();
+
+        // Datasets for modal checkbox list (paginate too, so it doesn't render 100+ rows at once)
         $datasets = Dataset::query()
             ->where('user_id', Auth::id())
             ->orderByDesc('created_at')
-            ->get(['id', 'name', 'is_public', 'created_at']);
+            ->paginate(20, ['id', 'name', 'is_public', 'created_at'])
+            ->withQueryString();
 
-        return view('repositories.index', compact('repositories', 'datasets'));
+        return view('repositories.index', compact('repositories', 'datasets', 'search'));
     }
 
     /**

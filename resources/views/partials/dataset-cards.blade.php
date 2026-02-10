@@ -154,4 +154,6 @@
             </div>
         @endforeach
     </div>
+
+    @include('partials.dataset-pagination', ['datasets' => $publicDatasets])
 @endif
