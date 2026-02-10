@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
-@section('title', 'Moje repozitáre')
+@section('title', 'My repositories')
 
 @section('content')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
         <div>
-            <h1 class="h3 mb-1">Moje repozitáre</h1>
-            <div class="text-muted small">Repozitár je skupina tvojich datasetov na jednom mieste.</div>
+            <h1 class="h3 mb-1">My repositories</h1>
+            <div class="text-muted small">A repository groups your datasets in one place.</div>
         </div>
 
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRepositoryModal">
-            Vytvoriť nový repozitár
+            Create new repository
         </button>
     </div>
 
@@ -19,7 +19,7 @@
     @endif
 
     @if ($repositories->isEmpty())
-        <div class="alert alert-info mb-0">Zatiaľ nemáš vytvorený žiadny repozitár.</div>
+        <div class="alert alert-info mb-0">You don't have any repositories yet.</div>
     @else
         <div class="row g-3">
             @foreach ($repositories as $repo)
@@ -33,16 +33,16 @@
                                         <div class="text-muted small">{{ $repo->description }}</div>
                                     @endif
                                 </div>
-                                <span class="badge text-bg-primary">{{ (int) $repo->datasets_count }} datasetov</span>
+                                <span class="badge text-bg-primary">{{ (int) $repo->datasets_count }} datasets</span>
                             </div>
 
                             <div class="text-muted small mt-2">
-                                Vytvorené: {{ $repo->created_at?->format('d.m.Y H:i') }}
+                                Created: {{ $repo->created_at?->format('d.m.Y H:i') }}
                             </div>
 
                             <div class="mt-3">
                                 <a href="{{ route('repositories.show', $repo->id) }}" class="btn btn-outline-secondary btn-sm rounded-pill">
-                                    Detail
+                                    Details
                                 </a>
                             </div>
                         </div>
@@ -57,8 +57,8 @@
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content border-0 rounded-4">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="createRepositoryModalLabel">Vytvoriť nový repozitár</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavrieť"></button>
+                    <h5 class="modal-title" id="createRepositoryModalLabel">Create new repository</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <form method="POST" action="{{ route('repositories.store') }}">
@@ -66,23 +66,23 @@
                     <div class="modal-body">
                         <div class="row g-3">
                             <div class="col-12">
-                                <label for="repoName" class="form-label">Názov repozitára</label>
+                                <label for="repoName" class="form-label">Repository name</label>
                                 <input id="repoName" type="text" name="name" class="form-control" maxlength="255" required>
                             </div>
 
                             <div class="col-12">
-                                <label for="repoDesc" class="form-label">Popis (voliteľné)</label>
+                                <label for="repoDesc" class="form-label">Description (optional)</label>
                                 <textarea id="repoDesc" name="description" class="form-control" rows="3" maxlength="2000"></textarea>
                             </div>
 
                             <div class="col-12">
                                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-                                    <div class="fw-semibold">Vyber datasety do repozitára</div>
-                                    <div class="text-muted small">Zobrazené sú iba tvoje datasety.</div>
+                                    <div class="fw-semibold">Select datasets for this repository</div>
+                                    <div class="text-muted small">Only your datasets are shown.</div>
                                 </div>
 
                                 @if ($datasets->isEmpty())
-                                    <div class="alert alert-info mb-0">Nemáš žiadne datasety. Najprv si nejaký nahraj.</div>
+                                    <div class="alert alert-info mb-0">You don't have any datasets yet. Upload one first.</div>
                                 @else
                                     <div class="table-responsive">
                                         <table class="table table-sm align-middle mb-0">
@@ -90,9 +90,9 @@
                                                 <tr>
                                                     <th style="width: 40px;"></th>
                                                     <th>ID</th>
-                                                    <th>Názov</th>
-                                                    <th>Viditeľnosť</th>
-                                                    <th>Dátum</th>
+                                                    <th>Name</th>
+                                                    <th>Visibility</th>
+                                                    <th>Date</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -107,9 +107,9 @@
                                                         </td>
                                                         <td>
                                                             @if ($ds->is_public)
-                                                                <span class="badge text-bg-success">Verejný</span>
+                                                                <span class="badge text-bg-success">Public</span>
                                                             @else
-                                                                <span class="badge text-bg-secondary">Súkromný</span>
+                                                                <span class="badge text-bg-secondary">Private</span>
                                                             @endif
                                                         </td>
                                                         <td class="text-muted">{{ $ds->created_at?->format('d.m.Y') }}</td>
@@ -124,8 +124,8 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zrušiť</button>
-                        <button type="submit" class="btn btn-primary">Vytvoriť</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
                     </div>
                 </form>
             </div>

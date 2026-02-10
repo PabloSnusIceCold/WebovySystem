@@ -36,7 +36,7 @@ class LoginController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'Prihlásenie zlyhalo. Skontrolujte svoje údaje.',
+            'email' => 'Login failed. Please check your credentials.',
         ])->onlyInput('email');
     }
 }

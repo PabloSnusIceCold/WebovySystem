@@ -62,7 +62,7 @@ class UserController extends Controller
             'role' => $data['role'] ?? 'user',
         ]);
 
-        return redirect('/admin?tab=users')->with('success', 'Používateľ bol vytvorený.');
+        return redirect('/admin?tab=users')->with('success', 'User has been created.');
     }
 
     /**
@@ -110,7 +110,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect('/admin?tab=users')->with('success', 'Používateľ bol upravený.');
+        return redirect('/admin?tab=users')->with('success', 'User has been updated.');
     }
 
     /**
@@ -150,9 +150,9 @@ class UserController extends Controller
             request()->session()->invalidate();
             request()->session()->regenerateToken();
 
-            return redirect()->route('home')->with('success', 'Tvoj účet bol odstránený a bol si odhlásený.');
+            return redirect()->route('home')->with('success', 'Your account has been deleted and you have been logged out.');
         }
 
-        return redirect('/admin?tab=users')->with('success', 'Používateľ bol odstránený.');
+        return redirect('/admin?tab=users')->with('success', 'User has been deleted.');
     }
 }

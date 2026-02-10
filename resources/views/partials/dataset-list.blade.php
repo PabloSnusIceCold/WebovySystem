@@ -7,8 +7,8 @@
 @if ($items->isEmpty())
     <div class="card shadow-sm rounded-4 border-0 market-card">
         <div class="card-body text-center text-muted py-5">
-            <div class="fw-semibold mb-1">Zatiaľ tu nič nie je</div>
-            <div>Nie sú dostupné žiadne verejné datasety.</div>
+            <div class="fw-semibold mb-1">Nothing here yet</div>
+            <div>No public datasets available.</div>
         </div>
     </div>
 @else
@@ -19,7 +19,7 @@
                     $files = $dataset->files ?? collect();
                     $fileCount = $files->count();
 
-                    $visibilityText = $dataset->is_public ? 'Verejný' : 'Súkromný';
+                    $visibilityText = $dataset->is_public ? 'Public' : 'Private';
                     $visibilityClass = $dataset->is_public
                         ? 'text-bg-success-subtle border border-success-subtle text-success-emphasis'
                         : 'text-bg-danger-subtle border border-danger-subtle text-danger-emphasis';
@@ -49,7 +49,7 @@
 
                             <div class="d-flex flex-wrap gap-2 mt-2 ws-dataset-line-meta">
                                 <span class="ws-pill ws-pill--sm">{{ $dataset->category->name ?? '—' }}</span>
-                                <span class="ws-pill ws-pill--sm">Súborov: {{ $fileCount }}</span>
+                                <span class="ws-pill ws-pill--sm">Files: {{ $fileCount }}</span>
                                 <span class="ws-pill ws-pill--sm">{{ $dataset->total_size_human }}</span>
                                 <span class="ws-pill ws-pill--sm">⬇ <span id="downloadCount-{{ $dataset->id }}">{{ $downloadCount }}</span></span>
                                 <span class="ws-pill ws-pill--sm">👍 <span id="likesCount-{{ $dataset->id }}">{{ $likesCount }}</span></span>
@@ -57,7 +57,7 @@
                         </div>
 
                         <div class="d-flex flex-wrap gap-2 align-items-center justify-content-end ws-dataset-line-actions">
-                            <a href="{{ route('datasets.show', $dataset->id) }}" class="btn btn-sm btn-outline-primary rounded-3">Detail</a>
+                            <a href="{{ route('datasets.show', $dataset->id) }}" class="btn btn-sm btn-outline-primary rounded-3">Details</a>
 
                             <a href="{{ route('datasets.download', $dataset->id) }}"
                                class="btn btn-sm btn-primary rounded-3 js-zip-download"
@@ -73,10 +73,10 @@
 
                             @if ($canDelete)
                                 <form action="{{ route('datasets.destroy', $dataset->id) }}" method="POST" class="m-0"
-                                      onsubmit="return confirm('Naozaj chceš odstrániť tento dataset?');">
+                                      onsubmit="return confirm('Are you sure you want to delete this dataset?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-3" title="Zmazať">Zmazať</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-3" title="Delete">Delete</button>
                                 </form>
                             @endif
                         </div>

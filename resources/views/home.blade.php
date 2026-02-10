@@ -10,32 +10,32 @@
         <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
             <div>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <h1 class="h3 mb-0">Verejné datasety</h1>
+                    <h1 class="h3 mb-0">Public datasets</h1>
                     <span class="badge rounded-pill text-bg-primary">
                         {{ isset($datasets) ? $datasets->count() : 0 }}
                     </span>
                 </div>
                 <div class="text-muted mt-1">
-                    Marketplace datasetov – prehľad verejných datasetov (a tvojich súkromných, ak si prihlásený).
+                    Dataset marketplace – browse public datasets (and your private ones when logged in).
                 </div>
             </div>
 
             {{-- Layout switcher --}}
             <div class="d-flex align-items-center gap-2">
-                <div class="btn-group" role="group" aria-label="Zobrazenie datasetov">
+                <div class="btn-group" role="group" aria-label="Dataset view">
                     <a
                         href="{{ request()->fullUrlWithQuery(['layout' => 'cards']) }}"
                         class="btn btn-sm {{ $layout === 'cards' ? 'btn-primary' : 'btn-outline-primary' }}"
-                        title="Zobraziť ako karty"
+                        title="Card view"
                     >
-                        Karty
+                        Cards
                     </a>
                     <a
                         href="{{ request()->fullUrlWithQuery(['layout' => 'list']) }}"
                         class="btn btn-sm {{ $layout === 'list' ? 'btn-primary' : 'btn-outline-primary' }}"
-                        title="Zobraziť ako zoznam"
+                        title="List view"
                     >
-                        Zoznam
+                        List
                     </a>
                 </div>
             </div>
@@ -51,7 +51,7 @@
 
                             <div class="row g-2 align-items-end">
                                 <div class="col-12 col-lg-6">
-                                    <label for="datasetSearch" class="form-label text-muted small mb-1">Vyhľadať</label>
+                                    <label for="datasetSearch" class="form-label text-muted small mb-1">Search</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-white">🔎</span>
                                         <input
@@ -59,18 +59,18 @@
                                             name="search"
                                             type="search"
                                             class="form-control"
-                                            placeholder="Hľadať dataset…"
-                                            aria-label="Vyhľadať dataset"
+                                            placeholder="Search datasets…"
+                                            aria-label="Search datasets"
                                             value="{{ request('search') }}"
                                         >
-                                        <button class="btn btn-outline-secondary" type="submit">Hľadať</button>
+                                        <button class="btn btn-outline-secondary" type="submit">Search</button>
                                     </div>
                                 </div>
 
                                 <div class="col-12 col-lg-4">
-                                    <label for="category_id" class="form-label text-muted small mb-1">Kategória</label>
+                                    <label for="category_id" class="form-label text-muted small mb-1">Category</label>
                                     <select id="category_id" name="category_id" class="form-select">
-                                        <option value="">Všetky kategórie</option>
+                                        <option value="">All categories</option>
                                         @foreach (($categories ?? collect()) as $category)
                                             <option value="{{ $category->id }}" {{ (string) request('category_id') === (string) $category->id ? 'selected' : '' }}>
                                                 {{ $category->name }}
@@ -102,11 +102,11 @@
             <div class="col-12 col-lg-4">
                 <div class="card border-0 rounded-4 shadow-sm mb-4">
                     <div class="card-body p-3 p-md-4">
-                        <div class="ws-section-title mb-3">Populárne datasety</div>
-                        <div class="text-muted small mb-3">Podľa počtu stiahnutí</div>
+                        <div class="ws-section-title mb-3">Popular datasets</div>
+                        <div class="text-muted small mb-3">By downloads</div>
 
                         @if (($topDownloads ?? collect())->isEmpty())
-                            <div class="text-muted small">Zatiaľ žiadne dáta.</div>
+                            <div class="text-muted small">No data yet.</div>
                         @else
                             <div class="list-group list-group-flush">
                                 @foreach (($topDownloads ?? collect()) as $ds)
@@ -125,11 +125,11 @@
 
                 <div class="card border-0 rounded-4 shadow-sm">
                     <div class="card-body p-3 p-md-4">
-                        <div class="ws-section-title mb-3">Najobľúbenejšie</div>
-                        <div class="text-muted small mb-3">Podľa počtu likov</div>
+                        <div class="ws-section-title mb-3">Most liked</div>
+                        <div class="text-muted small mb-3">By likes</div>
 
                         @if (($topLikes ?? collect())->isEmpty())
-                            <div class="text-muted small">Zatiaľ žiadne dáta.</div>
+                            <div class="text-muted small">No data yet.</div>
                         @else
                             <div class="list-group list-group-flush">
                                 @foreach (($topLikes ?? collect()) as $ds)
@@ -154,7 +154,7 @@
             const form = document.getElementById('datasetFilterForm');
             const cardsContainer = document.getElementById('datasetCardsContainer');
             const categorySelect = document.getElementById('category_id');
-            const layoutSwitcher = document.querySelector('.btn-group[aria-label="Zobrazenie datasetov"]');
+            const layoutSwitcher = document.querySelector('.btn-group[aria-label="Dataset view"]');
 
             if (!form || !cardsContainer || !categorySelect) {
                 return;
@@ -286,7 +286,7 @@
                 if (!link) return;
 
                 // Only handle clicks inside the layout switcher group
-                if (!link.closest('.btn-group[aria-label="Zobrazenie datasetov"]')) return;
+                if (!link.closest('.btn-group[aria-label="Dataset view"]')) return;
 
                 if (!window.fetch) return;
 

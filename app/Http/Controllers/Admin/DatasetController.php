@@ -57,7 +57,7 @@ class DatasetController extends Controller
             'is_public' => $request->boolean('is_public'),
         ]);
 
-        return redirect('/admin?tab=datasets')->with('success', 'Dataset bol upravený.');
+        return redirect('/admin?tab=datasets')->with('success', 'Dataset has been updated.');
     }
 
     /**
@@ -87,6 +87,6 @@ class DatasetController extends Controller
         // Hard delete dataset
         $dataset->delete();
 
-        return redirect('/admin?tab=datasets')->with('success', 'Dataset bol zmazaný.');
+        return redirect('/admin?tab=datasets')->with('success', 'Dataset has been deleted.');
     }
 }

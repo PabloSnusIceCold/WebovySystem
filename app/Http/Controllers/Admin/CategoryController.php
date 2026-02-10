@@ -41,7 +41,7 @@ class CategoryController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
-        return redirect('/admin?tab=categories')->with('success', 'Kategória bola vytvorená.');
+        return redirect('/admin?tab=categories')->with('success', 'Category has been created.');
     }
 
     public function edit(Category $category)
@@ -66,7 +66,7 @@ class CategoryController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
-        return redirect('/admin?tab=categories')->with('success', 'Kategória bola upravená.');
+        return redirect('/admin?tab=categories')->with('success', 'Category has been updated.');
     }
 
     public function destroy(Category $category)
@@ -92,7 +92,7 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        return redirect('/admin?tab=categories')->with('success', 'Kategória bola odstránená.');
+        return redirect('/admin?tab=categories')->with('success', 'Category has been deleted.');
     }
 
     public function show(Category $category)

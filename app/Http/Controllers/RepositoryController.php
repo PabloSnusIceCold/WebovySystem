@@ -58,7 +58,7 @@ class RepositoryController extends Controller
                 ->update(['repository_id' => $repository->id]);
         }
 
-        return redirect()->route('repositories.index')->with('success', 'Repozitár bol vytvorený.');
+        return redirect()->route('repositories.index')->with('success', 'Repository has been created.');
     }
 
     /**

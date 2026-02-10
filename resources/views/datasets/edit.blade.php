@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Upraviť dataset')
+@section('title', 'Edit dataset')
 
 @section('content')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
-        <h1 class="h3 mb-0">Upraviť dataset</h1>
-        <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary btn-sm">Späť</a>
+        <h1 class="h3 mb-0">Edit dataset</h1>
+        <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary btn-sm">Back</a>
     </div>
 
     <div class="row justify-content-center">
@@ -17,7 +17,7 @@
                         @method('PUT')
 
                         <div class="mb-3">
-                            <label for="name" class="form-label">Názov</label>
+                            <label for="name" class="form-label">Name</label>
                             <input
                                 type="text"
                                 id="name"
@@ -32,7 +32,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="description" class="form-label">Popis</label>
+                            <label for="description" class="form-label">Description</label>
                             <textarea
                                 id="description"
                                 name="description"
@@ -45,8 +45,8 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">Uložiť zmeny</button>
-                            <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary">Zrušiť</a>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                            <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>
@@ -54,4 +54,3 @@
         </div>
     </div>
 @endsection
-

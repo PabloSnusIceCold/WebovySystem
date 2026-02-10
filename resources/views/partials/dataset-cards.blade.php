@@ -7,8 +7,8 @@
 @if ($publicDatasets->isEmpty())
     <div class="card shadow-sm rounded-4 border-0 market-card">
         <div class="card-body text-center text-muted py-5">
-            <div class="fw-semibold mb-1">Zatiaľ tu nič nie je</div>
-            <div>Nie sú dostupné žiadne verejné datasety.</div>
+            <div class="fw-semibold mb-1">Nothing here yet</div>
+            <div>No public datasets available.</div>
         </div>
     </div>
 @else
@@ -21,7 +21,7 @@
                 $fileCount = $files->count();
                 $fileTypes = $files->pluck('file_type')->filter()->map(fn ($t) => strtoupper((string) $t))->unique()->values();
 
-                $visibilityText = $dataset->is_public ? 'Verejný' : 'Súkromný';
+                $visibilityText = $dataset->is_public ? 'Public' : 'Private';
                 $visibilityClass = $dataset->is_public
                     ? 'text-bg-success-subtle border border-success-subtle text-success-emphasis'
                     : 'text-bg-danger-subtle border border-danger-subtle text-danger-emphasis';
@@ -44,15 +44,15 @@
                                     action="{{ route('datasets.destroy', $dataset->id) }}"
                                     method="POST"
                                     class="m-0"
-                                    onsubmit="return confirm('Naozaj chceš odstrániť tento dataset?');"
+                                    onsubmit="return confirm('Are you sure you want to delete this dataset?');"
                                 >
                                     @csrf
                                     @method('DELETE')
                                     <button
                                         type="submit"
                                         class="btn btn-sm btn-outline-danger rounded-3 ws-card-delete"
-                                        title="Zmazať dataset"
-                                        aria-label="Zmazať dataset"
+                                        title="Delete dataset"
+                                        aria-label="Delete dataset"
                                     >
                                         ✕
                                     </button>
@@ -71,7 +71,7 @@
 
                             @if ($fileCount === 0)
                                 <span class="badge badge-soft text-bg-warning-subtle border border-warning-subtle text-warning-emphasis">
-                                    Bez súborov
+                                    No files
                                 </span>
                             @else
                                 @foreach ($fileTypes as $type)
@@ -89,29 +89,28 @@
                         <div class="mb-3">
                             <div class="row small text-muted g-2">
                                 <div class="col-6">
-                                    <div class="fw-semibold text-body">Súborov</div>
+                                    <div class="fw-semibold text-body">Files</div>
                                     <div>{{ $fileCount }}</div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="fw-semibold text-body">Veľkosť</div>
+                                    <div class="fw-semibold text-body">Size</div>
                                     <div>{{ $dataset->total_size_human }}</div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="fw-semibold text-body">Dátum</div>
+                                    <div class="fw-semibold text-body">Date</div>
                                     <div>{{ $dataset->created_at?->format('d.m.Y H:i') }}</div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="fw-semibold text-body">Používateľ</div>
+                                    <div class="fw-semibold text-body">User</div>
                                     <div>{{ $dataset->user?->username ?? '—' }}</div>
                                 </div>
 
-                                {{-- Stiahnutí + Likov vedľa seba (čistejšie) --}}
                                 <div class="col-6">
-                                    <div class="fw-semibold text-body">Stiahnutí</div>
+                                    <div class="fw-semibold text-body">Downloads</div>
                                     <div id="downloadCount-{{ $dataset->id }}">{{ $downloadCount }}</div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="fw-semibold text-body">Likov</div>
+                                    <div class="fw-semibold text-body">Likes</div>
                                     <div id="likesCount-{{ $dataset->id }}">{{ $likesCount }}</div>
                                 </div>
                             </div>
@@ -125,14 +124,14 @@
                                             href="{{ route('datasets.show', $dataset->id) }}"
                                             class="btn btn-sm btn-outline-primary rounded-3"
                                         >
-                                            Detail
+                                            Details
                                         </a>
                                         <a
                                             href="{{ route('datasets.download', $dataset->id) }}"
                                             class="btn btn-sm btn-primary rounded-3 js-zip-download"
                                             data-dataset-id="{{ $dataset->id }}"
                                         >
-                                            Stiahnuť ZIP
+                                            Download ZIP
                                         </a>
                                     </div>
 
@@ -147,7 +146,7 @@
                                     @endauth
                                 </div>
 
-                                {{-- Delete je teraz hore v hlavičke karty --}}
+                                {{-- Delete is in header --}}
                             </div>
                         </div>
                     </div>

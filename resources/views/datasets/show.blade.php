@@ -23,13 +23,13 @@
         <div class="d-flex align-items-center gap-2">
             @auth
                 @if ($canDownload)
-                    <a href="{{ route('datasets.download', $dataset->id) }}" class="btn btn-primary btn-sm">Stiahnuť ZIP</a>
+                    <a href="{{ route('datasets.download', $dataset->id) }}" class="btn btn-primary btn-sm">Download ZIP</a>
                 @endif
             @else
-                <a href="/login" class="btn btn-primary btn-sm">Prihlásiť sa pre stiahnutie</a>
+                <a href="/login" class="btn btn-primary btn-sm">Log in to download</a>
             @endauth
 
-            <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary btn-sm">Späť</a>
+            <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary btn-sm">Back</a>
         </div>
     </div>
 
@@ -39,30 +39,30 @@
             <div class="bg-white rounded-3 shadow-sm p-3 p-md-4 mb-4">
                 <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
                     <div>
-                        <div class="fw-semibold mb-1">Zdieľanie datasetu</div>
-                        <div class="text-muted small">Vygeneruje sa zdieľací odkaz (token sa vytvorí iba raz).</div>
+                        <div class="fw-semibold mb-1">Share dataset</div>
+                        <div class="text-muted small">A share link will be generated (token is created only once).</div>
                     </div>
 
                     <form id="shareDatasetForm" action="{{ route('datasets.share', $dataset->id) }}" method="POST" class="d-inline">
                         @csrf
-                        <button type="submit" class="btn btn-outline-primary btn-sm">Zdieľať</button>
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Share</button>
                     </form>
                 </div>
 
                 @if (session('share_url'))
                     <div id="shareResult" class="alert alert-info mt-3 mb-0">
-                        <div class="fw-semibold">Zdieľací odkaz:</div>
+                        <div class="fw-semibold">Share link:</div>
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                             <a id="shareUrlLink" href="{{ session('share_url') }}" target="_blank" rel="noopener" class="text-break">{{ session('share_url') }}</a>
-                            <button id="copyShareBtn" type="button" class="btn btn-sm btn-primary">Kopírovať</button>
+                            <button id="copyShareBtn" type="button" class="btn btn-sm btn-primary">Copy</button>
                         </div>
                     </div>
                 @else
                     <div id="shareResult" class="alert alert-info mt-3 mb-0 d-none">
-                        <div class="fw-semibold">Zdieľací odkaz:</div>
+                        <div class="fw-semibold">Share link:</div>
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                             <a id="shareUrlLink" href="#" target="_blank" rel="noopener" class="text-break"></a>
-                            <button id="copyShareBtn" type="button" class="btn btn-sm btn-primary">Kopírovať</button>
+                            <button id="copyShareBtn" type="button" class="btn btn-sm btn-primary">Copy</button>
                         </div>
                     </div>
                 @endif
@@ -74,51 +74,51 @@
 
     <div class="bg-white rounded-3 shadow-sm p-3 p-md-4 mb-4">
         <dl class="row mb-0">
-            <dt class="col-sm-3">Názov</dt>
+            <dt class="col-sm-3">Name</dt>
             <dd class="col-sm-9">{{ $dataset->name }}</dd>
 
-            <dt class="col-sm-3">Vlastník</dt>
+            <dt class="col-sm-3">Owner</dt>
             <dd class="col-sm-9">
                 {{ $dataset->user?->username ?? $dataset->user?->email ?? '—' }}
             </dd>
 
-            <dt class="col-sm-3">Kategória</dt>
+            <dt class="col-sm-3">Category</dt>
             <dd class="col-sm-9">{{ $dataset->category->name ?? '—' }}</dd>
 
-            <dt class="col-sm-3">Popis</dt>
+            <dt class="col-sm-3">Description</dt>
             <dd class="col-sm-9">{{ $dataset->description ?: '—' }}</dd>
 
-            <dt class="col-sm-3">Typy súborov</dt>
+            <dt class="col-sm-3">File types</dt>
             <dd class="col-sm-9">{{ $fileTypesText }}</dd>
 
-            <dt class="col-sm-3">Počet súborov</dt>
+            <dt class="col-sm-3">Files</dt>
             <dd class="col-sm-9">{{ $fileCount }}</dd>
 
-            <dt class="col-sm-3">Celková veľkosť</dt>
+            <dt class="col-sm-3">Total size</dt>
             <dd class="col-sm-9">{{ $dataset->total_size_human }}</dd>
 
-            <dt class="col-sm-3">Dátum nahratia</dt>
+            <dt class="col-sm-3">Uploaded</dt>
             <dd class="col-sm-9">{{ $dataset->created_at?->format('d.m.Y H:i') }}</dd>
         </dl>
     </div>
 
     <section class="bg-white rounded-3 shadow-sm p-3 p-md-4">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-            <h2 class="h5 mb-0">Súbory datasetu</h2>
-            <span class="text-muted small">{{ $dataset->files?->count() ?? 0 }} súbor(ov)</span>
+            <h2 class="h5 mb-0">Files</h2>
+            <span class="text-muted small">{{ $dataset->files?->count() ?? 0 }} file(s)</span>
         </div>
 
         @if (($dataset->files ?? collect())->isEmpty())
-            <div class="alert alert-info mb-0">Dataset zatiaľ nemá žiadne súbory.</div>
+            <div class="alert alert-info mb-0">This dataset has no files yet.</div>
         @else
             <div class="table-responsive">
                 <table class="table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Názov súboru</th>
-                            <th>Typ</th>
-                            <th class="text-end">Veľkosť</th>
-                            <th class="text-end">Akcie</th>
+                            <th>File name</th>
+                            <th>Type</th>
+                            <th class="text-end">Size</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -129,9 +129,9 @@
                                 <td class="text-end text-muted">{{ $file->size_human }}</td>
                                 <td class="text-end">
                                     @auth
-                                        <a href="{{ route('files.download', $file->id) }}" class="btn btn-outline-primary btn-sm">Stiahnuť súbor</a>
+                                        <a href="{{ route('files.download', $file->id) }}" class="btn btn-outline-primary btn-sm">Download</a>
                                     @else
-                                        <a href="/login" class="btn btn-outline-primary btn-sm">Prihlásiť sa</a>
+                                        <a href="/login" class="btn btn-outline-primary btn-sm">Log in</a>
                                     @endauth
                                 </td>
                             </tr>
@@ -157,7 +157,7 @@
                     }
 
                     function showError(message) {
-                        errorBox.textContent = message || 'Nastala chyba.';
+                        errorBox.textContent = message || 'Something went wrong.';
                         errorBox.classList.remove('d-none');
                     }
 
@@ -184,10 +184,10 @@
 
                         const ok = await copyToClipboard(url);
                         if (ok) {
-                            copyBtn.textContent = 'Skopírované';
-                            setTimeout(() => (copyBtn.textContent = 'Kopírovať'), 1500);
+                            copyBtn.textContent = 'Copied';
+                            setTimeout(() => (copyBtn.textContent = 'Copy'), 1500);
                         } else {
-                            alert('Nepodarilo sa skopírovať odkaz. Skús to manuálne.');
+                            alert('Copy failed. Please copy the link manually.');
                         }
                     });
 
@@ -202,7 +202,7 @@
                         const oldText = submitBtn ? submitBtn.textContent : '';
                         if (submitBtn) {
                             submitBtn.disabled = true;
-                            submitBtn.textContent = 'Generujem…';
+                            submitBtn.textContent = 'Generating…';
                         }
 
                         try {
@@ -217,7 +217,7 @@
                             });
 
                             if (!res.ok) {
-                                let msg = 'Nepodarilo sa vygenerovať zdieľací odkaz.';
+                                let msg = 'Failed to generate share link.';
                                 try {
                                     const data = await res.json();
                                     if (data && data.message) msg = data.message;
@@ -230,7 +230,7 @@
 
                             const data = await res.json();
                             if (!data || data.success !== true || !data.share_url) {
-                                showError('Server vrátil neočakávanú odpoveď.');
+                                showError('Unexpected server response.');
                                 return;
                             }
 
@@ -239,11 +239,11 @@
                             linkEl.setAttribute('href', data.share_url);
                             resultBox.classList.remove('d-none');
                         } catch (err) {
-                            showError('Nastala chyba pri komunikácii so serverom.');
+                            showError('Network error. Please try again.');
                         } finally {
                             if (submitBtn) {
                                 submitBtn.disabled = false;
-                                submitBtn.textContent = oldText || 'Zdieľať';
+                                submitBtn.textContent = oldText || 'Share';
                             }
                         }
                     });

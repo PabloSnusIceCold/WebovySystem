@@ -9,6 +9,7 @@ namespace App\Http\Controllers;
 use App\Models\Dataset;
 use App\Models\File;
 use App\Models\Category;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -58,14 +59,14 @@ class DatasetController extends Controller
                 'required',
                 'file',
                 function (string $attribute, $value, $fail) use ($allowedExtensions) {
-                    if (!$value instanceof \Illuminate\Http\UploadedFile) {
-                        $fail('Neplatný súbor.');
+                    if (!$value instanceof UploadedFile) {
+                        $fail('Invalid file.');
                         return;
                     }
 
                     $ext = strtolower((string) $value->getClientOriginalExtension());
                     if ($ext === '' || !in_array($ext, $allowedExtensions, true)) {
-                        $fail('Nepodporovaný typ súboru. Povolené: ' . strtoupper(implode(', ', $allowedExtensions)) . '.');
+                        $fail('Unsupported file type. Allowed: ' . strtoupper(implode(', ', $allowedExtensions)) . '.');
                     }
                 },
             ],
@@ -75,7 +76,7 @@ class DatasetController extends Controller
 
         $files = $request->file('files', []);
         if (!is_array($files) || count($files) < 1) {
-            return back()->withErrors(['files' => 'Musíš nahrať aspoň 1 súbor.'])->withInput();
+            return back()->withErrors(['files' => 'You must upload at least 1 file.'])->withInput();
         }
 
         // We'll create the dataset using the FIRST uploaded file for backward compatibility
@@ -140,7 +141,7 @@ class DatasetController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Dataset bol úspešne nahraný.');
+        return back()->with('success', 'Dataset uploaded successfully.');
     }
 
     /**
@@ -196,7 +197,7 @@ class DatasetController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
-        return redirect()->route('datasets.index')->with('success', 'Dataset bol upravený.');
+        return redirect()->route('datasets.index')->with('success', 'Dataset has been updated.');
     }
 
     /**
@@ -230,7 +231,7 @@ class DatasetController extends Controller
         $dataset->files()->delete();
         $dataset->delete();
 
-        return back()->with('success', 'Dataset bol úspešne odstránený.');
+        return back()->with('success', 'Dataset has been deleted.');
     }
 
     /**
@@ -377,7 +378,7 @@ class DatasetController extends Controller
         $zip = new \ZipArchive();
         $opened = $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         if ($opened !== true) {
-            abort(500, 'Nepodarilo sa vytvoriť ZIP.');
+            abort(500, 'Failed to create ZIP archive.');
         }
 
         foreach ($dataset->files as $file) {

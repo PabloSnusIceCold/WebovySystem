@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Registrácia')
+@section('title', 'Register')
 @section('nav_home_active', '')
 @section('nav_datasets_active', '')
 @section('nav_upload_active', '')
@@ -11,34 +11,34 @@
     <div class="col-md-6 col-lg-5">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h1 class="h4 mb-3">Registrácia</h1>
+                <h1 class="h4 mb-3">Create account</h1>
                 <form id="registerForm" method="POST" action="{{ route('register.perform') }}" novalidate>
                     @csrf
                     <div class="mb-3">
-                        <label for="username" class="form-label">Používateľské meno</label>
+                        <label for="username" class="form-label">Username</label>
                         <input type="text" class="form-control" id="username" name="username" value="{{ old('username') }}" required>
-                        <div class="invalid-feedback">Prosím, zadajte používateľské meno.</div>
+                        <div class="invalid-feedback">Please enter a username.</div>
                         @error('username')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
-                        <div class="invalid-feedback" id="emailError">Prosím, zadajte platný email (musí obsahovať @).</div>
+                        <div class="invalid-feedback" id="emailError">Please enter a valid email (must contain @).</div>
                         @error('email')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label">Heslo</label>
+                        <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password" required>
-                        <div class="invalid-feedback" id="passwordError">Heslo musí mať aspoň 8 znakov, obsahovať veľké písmeno, malé písmeno a číslo.</div>
+                        <div class="invalid-feedback" id="passwordError">Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a number.</div>
                         @error('password')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
-                        <label for="password_confirmation" class="form-label">Potvrdenie hesla</label>
+                        <label for="password_confirmation" class="form-label">Confirm password</label>
                         <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
-                        <div class="invalid-feedback" id="passwordConfirmError">Heslá sa musia zhodovať.</div>
+                        <div class="invalid-feedback" id="passwordConfirmError">Passwords must match.</div>
                     </div>
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary rounded-pill">Vytvoriť účet</button>
+                        <button type="submit" class="btn btn-primary rounded-pill">Create account</button>
                     </div>
                 </form>
             </div>

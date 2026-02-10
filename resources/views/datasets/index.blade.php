@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Moje datasety')
+@section('title', 'My datasets')
 
 @section('content')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
-        <h1 class="h3 mb-0">Moje datasety</h1>
+        <h1 class="h3 mb-0">My datasets</h1>
 
         <a href="{{ route('datasets.upload') }}" class="btn btn-primary">
-            Nahrať nový dataset
+            Upload new dataset
         </a>
     </div>
 
@@ -17,7 +17,7 @@
 
     @if (session('share_url'))
         <div class="alert alert-info">
-            <div class="fw-semibold">Tento dataset môžeš zdieľať pomocou odkazu:</div>
+            <div class="fw-semibold">You can share this dataset using this link:</div>
             <a href="{{ session('share_url') }}" target="_blank" rel="noopener" class="text-break">{{ session('share_url') }}</a>
         </div>
     @endif
@@ -28,7 +28,7 @@
 
     @if ($datasets->isEmpty())
         <div class="alert alert-info mb-0">
-            Zatiaľ nemáš nahrané žiadne datasety.
+            You haven't uploaded any datasets yet.
         </div>
     @else
         @php
@@ -47,9 +47,9 @@
                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                 <div class="fw-bold">{{ $dataset->name }}</div>
                                 @if ($dataset->is_public)
-                                    <span class="badge text-bg-success">Verejný</span>
+                                    <span class="badge text-bg-success">Public</span>
                                 @else
-                                    <span class="badge text-bg-secondary">Súkromný</span>
+                                    <span class="badge text-bg-secondary">Private</span>
                                 @endif
                             </div>
 
@@ -58,28 +58,28 @@
                             @endif
 
                             <div class="text-muted small mt-2">
-                                <span class="me-3"><span class="fw-semibold">Kategória:</span> {{ $dataset->category->name ?? '—' }}</span>
-                                <span class="me-3"><span class="fw-semibold">Formát:</span> {{ $dataset->file_type ?? '—' }}</span>
-                                <span class="me-3"><span class="fw-semibold">Veľkosť:</span> {{ $dataset->total_size_human }}</span>
-                                <span class="text-nowrap"><span class="fw-semibold">Dátum:</span> {{ $dataset->created_at?->format('d.m.Y H:i') }}</span>
+                                <span class="me-3"><span class="fw-semibold">Category:</span> {{ $dataset->category->name ?? '—' }}</span>
+                                <span class="me-3"><span class="fw-semibold">Format:</span> {{ $dataset->file_type ?? '—' }}</span>
+                                <span class="me-3"><span class="fw-semibold">Size:</span> {{ $dataset->total_size_human }}</span>
+                                <span class="text-nowrap"><span class="fw-semibold">Date:</span> {{ $dataset->created_at?->format('d.m.Y H:i') }}</span>
                             </div>
                         </div>
 
                         <div class="col-12 col-lg-4">
                             <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
-                                <a href="{{ route('datasets.show', $dataset->id) }}" class="btn btn-outline-secondary btn-sm">Zobraziť</a>
-                                <a href="{{ route('datasets.edit', $dataset->id) }}" class="btn btn-outline-secondary btn-sm">Upraviť</a>
+                                <a href="{{ route('datasets.show', $dataset->id) }}" class="btn btn-outline-secondary btn-sm">View</a>
+                                <a href="{{ route('datasets.edit', $dataset->id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
 
                                 <form action="{{ route('datasets.share', $dataset->id) }}" method="POST" class="d-inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Zdieľať</button>
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Share</button>
                                 </form>
 
                                 @if ($canDelete)
-                                    <form action="{{ route('datasets.destroy', $dataset->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Naozaj chceš odstrániť tento dataset?');">
+                                    <form action="{{ route('datasets.destroy', $dataset->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this dataset?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm">Zmazať</button>
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
                                     </form>
                                 @endif
                             </div>

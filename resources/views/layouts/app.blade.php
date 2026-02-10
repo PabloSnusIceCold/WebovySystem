@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="sk">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Webový systém')</title>
+    <title>@yield('title', 'Web System')</title>
 
     {{-- Bootstrap 5 CSS --}}
     <link
@@ -25,12 +25,12 @@
             <div class="container">
                 {{-- Left: Logo --}}
                 <a class="navbar-brand fw-bold text-primary" href="{{ url('/') }}">
-                    Webový systém
+                    Web System
                 </a>
 
                 {{-- Toggler (mobile) --}}
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Prepnúť navigáciu">
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -40,23 +40,23 @@
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                         <li class="nav-item">
                             <a class="nav-link @yield('nav_home_active')" href="{{ url('/') }}">
-                                Domov
+                                Home
                             </a>
                         </li>
                         @auth
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('datasets.index') ? 'active' : '' }}" href="{{ route('datasets.index') }}">
-                                    Moje datasety
+                                    My datasets
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('repositories.*') ? 'active' : '' }}" href="{{ route('repositories.index') }}">
-                                    Moje repozitáre
+                                    My repositories
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @yield('nav_upload_active')" href="{{ route('datasets.upload') }}">
-                                    Nahrať dataset
+                                    Upload dataset
                                 </a>
                             </li>
                         @endauth
@@ -65,17 +65,17 @@
                     {{-- Right: Auth-aware actions --}}
                     <div class="d-flex align-items-center gap-2 flex-wrap">
                         @if (Auth::check())
-                            <span class="navbar-text me-2 text-muted">Vitaj, <span class="fw-semibold text-body">{{ Auth::user()->username }}</span></span>
+                            <span class="navbar-text me-2 text-muted">Hi, <span class="fw-semibold text-body">{{ Auth::user()->username }}</span></span>
                             @if (Auth::user()->role === 'admin')
-                                <a href="{{ route('admin') }}" class="btn btn-outline-secondary btn-sm">Administrácia</a>
+                                <a href="{{ route('admin') }}" class="btn btn-outline-secondary btn-sm">Admin</a>
                             @endif
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                 @csrf
-                                <button type="submit" class="btn btn-outline-danger btn-sm">Odhlásiť</button>
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Log out</button>
                             </form>
                         @else
-                            <a href="{{ route('login.show') }}" class="btn btn-primary rounded-pill btn-sm">Prihlásenie</a>
-                            <a href="{{ route('register.show') }}" class="btn btn-outline-primary rounded-pill btn-sm">Registrácia</a>
+                            <a href="{{ route('login.show') }}" class="btn btn-primary rounded-pill btn-sm">Log in</a>
+                            <a href="{{ route('register.show') }}" class="btn btn-outline-primary rounded-pill btn-sm">Register</a>
                         @endif
                     </div>
                 </div>

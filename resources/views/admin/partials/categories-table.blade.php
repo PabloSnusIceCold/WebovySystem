@@ -7,8 +7,8 @@
 @endif
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="h5 mb-0">Kategórie</h2>
-    <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">Pridať kategóriu</a>
+    <h2 class="h5 mb-0">Categories</h2>
+    <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">Add category</a>
 </div>
 
 <div class="card shadow-sm">
@@ -17,10 +17,10 @@
             <thead class="table-light">
                 <tr>
                     <th scope="col">ID</th>
-                    <th scope="col">Názov</th>
-                    <th scope="col" class="text-end">Datasety</th>
-                    <th scope="col">Vytvorené</th>
-                    <th scope="col" class="text-end">Akcie</th>
+                    <th scope="col">Name</th>
+                    <th scope="col" class="text-end">Datasets</th>
+                    <th scope="col">Created</th>
+                    <th scope="col" class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -31,10 +31,10 @@
                         <td class="text-end">{{ $category->datasets_count ?? 0 }}</td>
                         <td class="text-muted">{{ $category->created_at?->format('d.m.Y H:i') }}</td>
                         <td class="text-end">
-                            <a href="{{ route('admin.categories.show', $category->id) }}" class="btn btn-sm btn-outline-secondary me-1">Detail</a>
+                            <a href="{{ route('admin.categories.show', $category->id) }}" class="btn btn-sm btn-outline-secondary me-1">Details</a>
                             <a href="{{ route('admin.categories.edit', $category) }}" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
 
-                            <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline" onsubmit="return confirm('Naozaj odstrániť kategóriu?');">
+                            <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this category?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -43,7 +43,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center py-4">Žiadne kategórie.</td>
+                        <td colspan="5" class="text-center py-4">No categories.</td>
                     </tr>
                 @endforelse
             </tbody>

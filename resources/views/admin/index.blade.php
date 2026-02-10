@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Administrácia')
+@section('title', 'Administration')
 
 @section('content')
     @php
@@ -15,15 +15,15 @@
                     <div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="ws-admin-hero-icon" aria-hidden="true">⚙️</span>
-                            <h1 class="ws-admin-title mb-0">Administrácia</h1>
+                            <h1 class="ws-admin-title mb-0">Administration</h1>
                         </div>
                         <p class="ws-admin-subtitle ws-muted mb-0 mt-2">
-                            Moderný administrátorský dashboard pre správu používateľov, datasetov a kategórií.
+                            A modern admin dashboard for managing users, datasets, and categories.
                         </p>
                     </div>
 
                     <div class="d-flex flex-wrap gap-2">
-                        <a href="{{ url('/') }}" class="btn btn-sm btn-outline-secondary ws-btn">Späť na web</a>
+                        <a href="{{ url('/') }}" class="btn btn-sm btn-outline-secondary ws-btn">Back to site</a>
                     </div>
                 </div>
             </div>
@@ -36,7 +36,7 @@
                     <div class="card-body d-flex align-items-center gap-3">
                         <div class="ws-admin-stat-icon" aria-hidden="true">👤</div>
                         <div>
-                            <div class="ws-muted small">Používatelia</div>
+                            <div class="ws-muted small">Users</div>
                             <div class="fs-4 fw-bold">{{ (int) ($stats['users'] ?? 0) }}</div>
                         </div>
                     </div>
@@ -48,7 +48,7 @@
                     <div class="card-body d-flex align-items-center gap-3">
                         <div class="ws-admin-stat-icon" aria-hidden="true">📦</div>
                         <div>
-                            <div class="ws-muted small">Datasety</div>
+                            <div class="ws-muted small">Datasets</div>
                             <div class="fs-4 fw-bold">{{ (int) ($stats['datasets'] ?? 0) }}</div>
                         </div>
                     </div>
@@ -60,7 +60,7 @@
                     <div class="card-body d-flex align-items-center gap-3">
                         <div class="ws-admin-stat-icon" aria-hidden="true">🏷️</div>
                         <div>
-                            <div class="ws-muted small">Kategórie</div>
+                            <div class="ws-muted small">Categories</div>
                             <div class="fs-4 fw-bold">{{ (int) ($stats['categories'] ?? 0) }}</div>
                         </div>
                     </div>
@@ -72,17 +72,17 @@
         <ul class="nav nav-pills ws-admin-pills mb-3">
             <li class="nav-item">
                 <a class="nav-link {{ $activeTab === 'users' ? 'active' : '' }}" href="{{ url('/admin?tab=users') }}">
-                    Používatelia
+                    Users
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ $activeTab === 'datasets' ? 'active' : '' }}" href="{{ url('/admin?tab=datasets') }}">
-                    Datasety
+                    Datasets
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ $activeTab === 'categories' ? 'active' : '' }}" href="{{ url('/admin?tab=categories') }}">
-                    Kategórie
+                    Categories
                 </a>
             </li>
         </ul>

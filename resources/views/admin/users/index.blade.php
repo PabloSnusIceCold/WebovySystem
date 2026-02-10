@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Používatelia')
+@section('title', 'Users')
 
 @section('content')
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3 mb-0">Používatelia</h1>
-        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Pridať používateľa</a>
+        <h1 class="h3 mb-0">Users</h1>
+        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Add user</a>
     </div>
 
     <div class="card shadow-sm">
@@ -17,9 +17,9 @@
                         <th scope="col">ID</th>
                         <th scope="col">Username</th>
                         <th scope="col">Email</th>
-                        <th scope="col">Datasety</th>
-                        <th scope="col">Registrácia</th>
-                        <th scope="col" class="text-end">Akcie</th>
+                        <th scope="col">Datasets</th>
+                        <th scope="col">Registered</th>
+                        <th scope="col" class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,7 +33,7 @@
                             <td class="text-end">
                                 <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
 
-                                <form action="{{ route('admin.users.delete', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Naozaj odstrániť používateľa?');">
+                                <form action="{{ route('admin.users.delete', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -42,7 +42,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-4">Žiadni používatelia.</td>
+                            <td colspan="6" class="text-center py-4">No users.</td>
                         </tr>
                     @endforelse
                 </tbody>

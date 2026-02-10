@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Prihlásenie')
+@section('title', 'Log in')
 @section('nav_home_active', '')
 @section('nav_datasets_active', '')
 @section('nav_upload_active', '')
@@ -11,28 +11,28 @@
     <div class="col-md-6 col-lg-5">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h1 class="h4 mb-3">Prihlásenie</h1>
+                <h1 class="h4 mb-3">Log in</h1>
                 <form id="loginForm" method="POST" action="{{ route('login.perform', request()->has('redirect') ? ['redirect' => request()->query('redirect')] : []) }}" novalidate>
                     @csrf
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
-                        <div class="invalid-feedback" id="emailError">Prosím, zadajte platný email (musí obsahovať @).</div>
+                        <div class="invalid-feedback" id="emailError">Please enter a valid email (must contain @).</div>
                         @error('email')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label">Heslo</label>
+                        <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password" required>
-                        <div class="invalid-feedback" id="passwordError">Heslo musí mať aspoň 8 znakov, obsahovať veľké písmeno, malé písmeno a číslo.</div>
+                        <div class="invalid-feedback" id="passwordError">Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a number.</div>
                         @error('password')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary rounded-pill">Prihlásiť sa</button>
+                        <button type="submit" class="btn btn-primary rounded-pill">Log in</button>
                     </div>
                 </form>
                 <div class="text-center mt-3">
-                    <span>Nemáš účet?</span>
-                    <a href="{{ route('register.show') }}" class="text-primary fw-semibold">Registrovať sa</a>
+                    <span>Don't have an account?</span>
+                    <a href="{{ route('register.show') }}" class="text-primary fw-semibold">Create one</a>
                 </div>
 
             </div>
