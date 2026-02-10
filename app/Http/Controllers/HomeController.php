@@ -55,6 +55,13 @@ class HomeController extends Controller
 
         $isReset = $request->boolean('reset');
 
+        // Determine layout early so pagination can depend on it.
+        $layout = $isReset ? 'cards' : (string) $request->query('layout', 'cards');
+        $layout = in_array($layout, ['cards', 'list'], true) ? $layout : 'cards';
+
+        // Per-page depends on layout.
+        $perPage = $layout === 'list' ? 12 : 8;
+
         $categoryId = $isReset ? '' : trim((string) $request->query('category_id', ''));
         if ($categoryId !== '') {
             $query->where('category_id', $categoryId);
@@ -70,7 +77,7 @@ class HomeController extends Controller
 
         $datasets = $query
             ->latest()
-            ->paginate(20)
+            ->paginate($perPage)
             ->withQueryString();
 
         // --- Right sidebar: Top lists ---
@@ -99,7 +106,7 @@ class HomeController extends Controller
             $topDownloads = (clone $topBase)
                 ->orderByDesc('download_count')
                 ->orderByDesc('created_at')
-                ->limit(5)
+                ->limit(10)
                 ->get(['id', 'name', 'category_id', 'download_count', 'is_public']);
         }
 
@@ -107,14 +114,12 @@ class HomeController extends Controller
             $topLikes = (clone $topBase)
                 ->orderByDesc('likes_count')
                 ->orderByDesc('created_at')
-                ->limit(5)
+                ->limit(10)
                 ->get(['id', 'name', 'category_id', 'likes_count', 'is_public']);
         }
 
         if ($request->ajax() || $request->expectsJson()) {
-            $layout = (string) $request->query('layout', 'cards');
-            $layout = in_array($layout, ['cards', 'list'], true) ? $layout : 'cards';
-
+            // Use the already-normalized layout from above (important for per-page).
             if ($layout === 'list') {
                 return view('partials.dataset-list', compact('datasets'));
             }
