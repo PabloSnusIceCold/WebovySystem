@@ -7,7 +7,6 @@ use App\Models\Dataset;
 use App\Models\File;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class DatasetSeeder extends Seeder
 {
@@ -30,10 +29,10 @@ class DatasetSeeder extends Seeder
             $datasetName = "Demo dataset #{$i}";
 
             /** @var \App\Models\Dataset $dataset */
-            $dataset = Dataset::withTrashed()->updateOrCreate(
+            $dataset = Dataset::query()->updateOrCreate(
                 ['name' => $datasetName],
                 [
-                    'description' => "Testovací dataset vytvorený seederom (#{${"i"}}).",
+                    'description' => "Testovací dataset vytvorený seederom (#{$i}).",
                     'is_public' => (bool) random_int(0, 1),
                     'category_id' => $categories[array_rand($categories)],
                     'user_id' => $users[array_rand($users)],
@@ -43,7 +42,6 @@ class DatasetSeeder extends Seeder
                     'file_type' => 'ZIP',
                     'file_size' => random_int(25_000, 7_000_000),
                     'share_token' => null,
-                    'deleted_at' => null,
                 ]
             );
 
@@ -66,4 +64,3 @@ class DatasetSeeder extends Seeder
         }
     }
 }
-

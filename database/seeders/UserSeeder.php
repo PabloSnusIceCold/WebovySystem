@@ -13,14 +13,13 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin account (idempotent)
-        User::withTrashed()->updateOrCreate(
-            ['email' => 'admin@example.com'],
+        // Admin account (idempotent). Username is unique, so seed by username.
+        User::query()->updateOrCreate(
+            ['username' => 'admin'],
             [
-                'username' => 'admin',
+                'email' => 'admin@example.com',
                 'password' => Hash::make('Admin123!'),
                 'role' => 'admin',
-                'deleted_at' => null,
             ]
         );
 
@@ -28,16 +27,14 @@ class UserSeeder extends Seeder
         for ($i = 1; $i <= 20; $i++) {
             $email = "user{$i}@example.com";
 
-            User::withTrashed()->updateOrCreate(
+            User::query()->updateOrCreate(
                 ['email' => $email],
                 [
                     'username' => "user{$i}",
                     'password' => Hash::make('User123!'),
                     'role' => 'user',
-                    'deleted_at' => null,
                 ]
             );
         }
     }
 }
-
