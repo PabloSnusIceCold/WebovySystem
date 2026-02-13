@@ -67,6 +67,11 @@ Route::middleware('auth')->group(function () {
 
     // Repositories (My repositories)
     Route::get('/repositories', [RepositoryController::class, 'index'])->name('repositories.index');
+
+    // AJAX: datasets list for create-repository modal (pagination without reload)
+    Route::get('/repositories/modal/datasets', [RepositoryController::class, 'datasetsModal'])
+        ->name('repositories.modal.datasets');
+
     Route::post('/repositories', [RepositoryController::class, 'store'])->name('repositories.store');
     Route::get('/repositories/{repository}', [RepositoryController::class, 'show'])
         ->whereNumber('repository')

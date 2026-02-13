@@ -34,10 +34,11 @@ class RepositoryController extends Controller
             ->withQueryString();
 
         // Datasets for modal checkbox list (paginate too, so it doesn't render 100+ rows at once)
+        // Use a dedicated page query param so it doesn't conflict with repositories pagination.
         $datasets = Dataset::query()
             ->where('user_id', Auth::id())
             ->orderByDesc('created_at')
-            ->paginate(20, ['id', 'name', 'is_public', 'created_at'])
+            ->paginate(20, ['id', 'name', 'is_public', 'created_at'], 'dataset_page')
             ->withQueryString();
 
         return view('repositories.index', compact('repositories', 'datasets', 'search'));
@@ -148,5 +149,21 @@ class RepositoryController extends Controller
             ->firstOrFail();
 
         return view('repositories.share', compact('repository'));
+    }
+
+    /**
+     * AJAX: Return paginated datasets table HTML for the create-repository modal.
+     */
+    public function datasetsModal(Request $request)
+    {
+        $datasets = Dataset::query()
+            ->where('user_id', Auth::id())
+            ->orderByDesc('created_at')
+            ->paginate(20, ['id', 'name', 'is_public', 'created_at'], 'dataset_page');
+
+        return response()->json([
+            'success' => true,
+            'html' => view('repositories.partials.datasets-modal-table', compact('datasets'))->render(),
+        ]);
     }
 }

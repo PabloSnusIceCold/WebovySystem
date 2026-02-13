@@ -67,7 +67,7 @@
 
     {{-- Modal: Create repository --}}
     <div class="modal fade" id="createRepositoryModal" tabindex="-1" aria-labelledby="createRepositoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 rounded-4">
                 <div class="modal-header">
                     <h5 class="modal-title" id="createRepositoryModalLabel">Create new repository</h5>
@@ -97,50 +97,15 @@
                                 @if ($datasets->isEmpty())
                                     <div class="alert alert-info mb-0">You don't have any datasets yet. Upload one first.</div>
                                 @else
-                                    <div class="table-responsive">
-                                        <table class="table table-sm align-middle mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th style="width: 40px;"></th>
-                                                    <th>ID</th>
-                                                    <th>Name</th>
-                                                    <th>Visibility</th>
-                                                    <th>Date</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($datasets as $ds)
-                                                    <tr>
-                                                        <td>
-                                                            <input class="form-check-input" type="checkbox" name="dataset_ids[]" value="{{ $ds->id }}" id="ds-{{ $ds->id }}">
-                                                        </td>
-                                                        <td class="text-muted">{{ $ds->id }}</td>
-                                                        <td>
-                                                            <label for="ds-{{ $ds->id }}" class="mb-0">{{ $ds->name }}</label>
-                                                        </td>
-                                                        <td>
-                                                            @if ($ds->is_public)
-                                                                <span class="badge text-bg-success">Public</span>
-                                                            @else
-                                                                <span class="badge text-bg-secondary">Private</span>
-                                                            @endif
-                                                        </td>
-                                                        <td class="text-muted">{{ $ds->created_at?->format('d.m.Y') }}</td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div class="mt-3 d-flex justify-content-center">
-                                        {{ $datasets->links() }}
+                                    <div id="wsRepoDatasetsModalContainer">
+                                        @include('repositories.partials.datasets-modal-table', ['datasets' => $datasets])
                                     </div>
                                 @endif
                             </div>
                         </div>
                     </div>
 
-                    <div class="modal-footer">
+                    <div class="modal-footer bg-body border-top" style="position: sticky; bottom: 0; z-index: 5;">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary">Create</button>
                     </div>
@@ -149,3 +114,132 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        (function () {
+            const modalEl = document.getElementById('createRepositoryModal');
+            if (!modalEl || typeof bootstrap === 'undefined' || !bootstrap.Modal) return;
+
+            const form = modalEl.querySelector('form');
+            const container = document.getElementById('wsRepoDatasetsModalContainer');
+            if (!form || !container) return;
+
+            const STORAGE_KEY = 'ws_selected_repository_dataset_ids';
+
+            function getSelectedSet() {
+                try {
+                    const raw = sessionStorage.getItem(STORAGE_KEY);
+                    const arr = raw ? JSON.parse(raw) : [];
+                    return new Set(Array.isArray(arr) ? arr.map(String) : []);
+                } catch (e) {
+                    return new Set();
+                }
+            }
+
+            function saveSelectedSet(set) {
+                try {
+                    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(set)));
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            function syncCheckboxesFromStorage(scopeEl) {
+                const selected = getSelectedSet();
+                const root = scopeEl || modalEl;
+                const inputs = root.querySelectorAll('input[type="checkbox"][name="dataset_ids[]"]');
+                inputs.forEach((cb) => {
+                    cb.checked = selected.has(String(cb.value));
+                });
+            }
+
+            function updateStorageFromCheckbox(cb) {
+                const selected = getSelectedSet();
+                const val = String(cb.value);
+                if (cb.checked) selected.add(val);
+                else selected.delete(val);
+                saveSelectedSet(selected);
+            }
+
+            // Persist selections even when list changes
+            modalEl.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!target || !target.matches('input[type="checkbox"][name="dataset_ids[]"]')) return;
+                updateStorageFromCheckbox(target);
+            });
+
+            // Before submit, inject hidden inputs for ids selected on other pages
+            form.addEventListener('submit', () => {
+                form.querySelectorAll('input[type="hidden"][data-ws-selected="1"]').forEach((el) => el.remove());
+
+                const selected = getSelectedSet();
+                selected.forEach((id) => {
+                    const exists = form.querySelector('input[type="checkbox"][name="dataset_ids[]"][value="' + CSS.escape(String(id)) + '"]');
+                    if (exists) return;
+
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = 'dataset_ids[]';
+                    hidden.value = String(id);
+                    hidden.setAttribute('data-ws-selected', '1');
+                    form.appendChild(hidden);
+                });
+
+                try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
+            });
+
+            async function fetchDatasetsPage(url) {
+                try {
+                    const res = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                    if (!res.ok) return;
+
+                    const data = await res.json();
+                    if (!data || data.success !== true || !data.html) return;
+
+                    container.innerHTML = data.html;
+                    syncCheckboxesFromStorage(container);
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            // Intercept pagination clicks inside the modal and load via AJAX (no page reload)
+            modalEl.addEventListener('click', (e) => {
+                const link = e.target && e.target.closest ? e.target.closest('.ws-modal-datasets-pagination a') : null;
+                if (!link) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Convert paginator URL to our AJAX endpoint
+                try {
+                    const u = new URL(link.getAttribute('href'), window.location.href);
+                    const datasetPage = u.searchParams.get('dataset_page') || u.searchParams.get('page') || '1';
+
+                    const ajaxUrl = new URL('{{ route('repositories.modal.datasets') }}', window.location.href);
+                    ajaxUrl.searchParams.set('dataset_page', datasetPage);
+
+                    fetchDatasetsPage(ajaxUrl.toString());
+                } catch (err) {
+                    // ignore
+                }
+            });
+
+            // When modal opens, ensure checkboxes match storage (important for first render)
+            modalEl.addEventListener('shown.bs.modal', () => {
+                syncCheckboxesFromStorage(modalEl);
+            });
+
+            // Initial sync
+            syncCheckboxesFromStorage(modalEl);
+        })();
+    </script>
+@endpush
