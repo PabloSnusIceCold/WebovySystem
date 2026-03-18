@@ -8,6 +8,9 @@ services:
     container_name: webovysystem-app
     volumes:
       - ./:/app
+      # Use named volumes for writable runtime directories (avoids Windows bind-mount permission issues)
+      - webovysystem_storage:/app/storage
+      - webovysystem_bootstrap_cache:/app/bootstrap/cache
     expose:
       - "9000"
     depends_on:
@@ -20,6 +23,9 @@ services:
       - "8000:80"
     volumes:
       - ./:/app
+      # Nginx needs to read compiled views and storage-generated files? It mostly proxies to PHP.
+      # Keep storage volume consistent in case any paths are referenced.
+      - webovysystem_storage:/app/storage
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - app
@@ -51,3 +57,5 @@ services:
 
 volumes:
   mysqldata:
+  webovysystem_storage:
+  webovysystem_bootstrap_cache:

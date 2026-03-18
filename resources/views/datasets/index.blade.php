@@ -71,7 +71,22 @@
 
                             <div class="text-muted small mt-2">
                                 <span class="me-3"><span class="fw-semibold">Category:</span> {{ $dataset->category->name ?? '—' }}</span>
-                                <span class="me-3"><span class="fw-semibold">Format:</span> {{ $dataset->file_type ?? '—' }}</span>
+                                <span class="me-3"><span class="fw-semibold">Format:</span>
+                                    @php
+                                        // Prefer explicit file_type on dataset (legacy) otherwise derive from files relation
+                                        $formats = [];
+                                        if (!empty($dataset->file_type)) {
+                                            $formats[] = strtoupper((string) $dataset->file_type);
+                                        }
+                                        if ($dataset->relationLoaded('files')) {
+                                            $fileTypes = $dataset->files->pluck('file_type')->filter()->map(fn($t) => strtoupper((string)$t))->unique()->values();
+                                            foreach ($fileTypes as $ft) {
+                                                if (!in_array($ft, $formats, true)) $formats[] = $ft;
+                                            }
+                                        }
+                                    @endphp
+                                    {{ count($formats) ? implode(', ', $formats) : '—' }}
+                                </span>
                                 <span class="me-3"><span class="fw-semibold">Files:</span> {{ (int) ($dataset->files_count ?? 0) }}</span>
                                 <span class="me-3"><span class="fw-semibold">Size:</span> {{ $dataset->total_size_human }}</span>
                                 <span class="text-nowrap"><span class="fw-semibold">Date:</span> {{ $dataset->created_at?->format('d.m.Y H:i') }}</span>

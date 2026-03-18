@@ -32,3 +32,10 @@ RUN mkdir -p /app/storage/framework/views /app/storage/framework/cache /app/stor
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Runtime entrypoint (fix permissions for mounted volumes)
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["php-fpm", "-F"]

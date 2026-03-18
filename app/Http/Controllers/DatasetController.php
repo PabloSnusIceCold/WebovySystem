@@ -29,7 +29,7 @@ class DatasetController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         $query = Dataset::query()
-            ->with(['category'])
+            ->with(['category', 'files'])
             ->withCount('files')
             ->where('user_id', Auth::id());
 
@@ -93,8 +93,10 @@ class DatasetController extends Controller
             return back()->withErrors(['files' => 'You must upload at least 1 file.'])->withInput();
         }
 
+        $defaultDisk = config('filesystems.default', 'local');
+        $disk = Storage::disk($defaultDisk);
+
         // We'll create the dataset using the FIRST uploaded file for backward compatibility
-        // (datasets.file_* columns). Then we store each file exactly once and create File rows.
         $firstFile = $files[0];
 
         $firstExtension = strtolower((string) $firstFile->getClientOriginalExtension());
@@ -109,8 +111,8 @@ class DatasetController extends Controller
             default => strtoupper($firstExtension ?: 'N/A'),
         };
 
-        // Store the first file once.
-        $firstPath = $firstFile->store('datasets');
+        // Store the first file explicitly on default disk in /datasets.
+        $firstPath = $disk->putFile('datasets', $firstFile);
 
         $dataset = Dataset::create([
             'user_id' => Auth::id(),
@@ -118,9 +120,7 @@ class DatasetController extends Controller
             'is_public' => $request->boolean('is_public'),
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
-            'file_path' => $firstPath,
-            'file_type' => $firstFileType,
-            'file_size' => $firstFile->getSize() ?: null,
+            // legacy columns may still exist in DB but are no longer fillable on model
         ]);
 
         // Create File record for the first file.
@@ -131,9 +131,8 @@ class DatasetController extends Controller
             'file_size' => (int) ($firstFile->getSize() ?: 0),
         ]);
 
-        // Store remaining files (if any).
         foreach (array_slice($files, 1) as $file) {
-            $path = $file->store('datasets');
+            $path = $disk->putFile('datasets', $file);
 
             $extension = strtolower((string) $file->getClientOriginalExtension());
             $fileType = match ($extension) {
@@ -232,13 +231,35 @@ class DatasetController extends Controller
         // Delete physical files in storage (all related files)
         foreach ($dataset->files as $file) {
             if (!empty($file->file_path)) {
-                Storage::delete($file->file_path);
+                try {
+                    $defaultDisk = config('filesystems.default', 'local');
+                    if (Storage::disk($defaultDisk)->exists($file->file_path)) {
+                        Storage::disk($defaultDisk)->delete($file->file_path);
+                    } elseif (Storage::disk('public')->exists($file->file_path)) {
+                        Storage::disk('public')->delete($file->file_path);
+                    } elseif (Storage::exists($file->file_path)) {
+                        Storage::delete($file->file_path);
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to delete physical file during dataset destroy: ' . $file->file_path . ' error=' . $e->getMessage());
+                }
             }
         }
 
         // Also remove legacy single-file path if present
         if (!empty($dataset->file_path)) {
-            Storage::delete($dataset->file_path);
+            try {
+                $defaultDisk = config('filesystems.default', 'local');
+                if (Storage::disk($defaultDisk)->exists($dataset->file_path)) {
+                    Storage::disk($defaultDisk)->delete($dataset->file_path);
+                } elseif (Storage::disk('public')->exists($dataset->file_path)) {
+                    Storage::disk('public')->delete($dataset->file_path);
+                } elseif (Storage::exists($dataset->file_path)) {
+                    Storage::delete($dataset->file_path);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to delete legacy dataset file during destroy: ' . $dataset->file_path . ' error=' . $e->getMessage());
+            }
         }
 
         // Delete DB records (files first, then dataset)
@@ -297,7 +318,7 @@ class DatasetController extends Controller
      */
     public function shareShow(string $token)
     {
-        $dataset = Dataset::with(['user', 'files'])->where('share_token', $token)->firstOrFail();
+        $dataset = Dataset::with(['user', 'category', 'files'])->where('share_token', $token)->firstOrFail();
 
         // Mark this dataset as shared for this browser/session so downloads can be allowed.
         session(['shared_dataset_' . $dataset->id => true]);
@@ -314,6 +335,48 @@ class DatasetController extends Controller
     {
         // Keep backward compatibility: /datasets/{id}/download now returns ZIP.
         return $this->downloadZip($id);
+    }
+
+    /**
+     * Resolve a stored file path to an absolute filesystem path.
+     * Tries: default disk, public disk, then Storage facade. Returns null if not found or not a regular file.
+     */
+    private function resolveAbsoluteFilePath(?string $storedPath): ?string
+    {
+        $path = trim((string) ($storedPath ?? ''));
+        if ($path === '') {
+            return null;
+        }
+
+        // Normalize possible wrong prefixes.
+        // Stored paths should be relative to the default disk root (storage/app/private).
+        $path = ltrim($path, '/');
+        if (str_starts_with($path, 'private/')) {
+            $path = substr($path, strlen('private/'));
+        }
+
+        $storageAppRoot = storage_path('app');
+        if (str_starts_with($path, $storageAppRoot)) {
+            $path = ltrim(substr($path, strlen($storageAppRoot)), DIRECTORY_SEPARATOR);
+        }
+
+        $defaultDisk = config('filesystems.default', 'local');
+        $disk = Storage::disk($defaultDisk);
+
+        $absolute = null;
+        if ($disk->exists($path)) {
+            $absolute = $disk->path($path);
+        } elseif (Storage::disk('public')->exists($path)) {
+            $absolute = Storage::disk('public')->path($path);
+        } elseif (Storage::exists($path)) {
+            $absolute = Storage::path($path);
+        }
+
+        if (!$absolute || !is_file($absolute)) {
+            return null;
+        }
+
+        return $absolute;
     }
 
     /**
@@ -342,18 +405,33 @@ class DatasetController extends Controller
             }
         }
 
-        if (!Storage::exists($file->file_path)) {
+        $storedPath = $file->file_path;
+        if (!$storedPath) {
+            Log::warning('FILE DOWNLOAD 404: empty stored_path', [
+                'file_id' => (int) $file->id,
+                'dataset_id' => (int) $dataset->id,
+            ]);
             abort(404);
         }
 
-        // Count a successful authorized download attempt
-        if (Schema::hasColumn('datasets', 'download_count')) {
-            $dataset->increment('download_count');
+        $absolute = $this->resolveAbsoluteFilePath($storedPath);
+        Log::info('FILE DOWNLOAD resolve', [
+            'file_id' => (int) $file->id,
+            'dataset_id' => (int) $dataset->id,
+            'stored_path' => (string) $storedPath,
+            'resolved' => $absolute,
+        ]);
+
+        if (!$absolute) {
+            Log::warning('FILE DOWNLOAD 404: path not found or not a file', [
+                'file_id' => (int) $file->id,
+                'dataset_id' => (int) $dataset->id,
+                'stored_path' => (string) $storedPath,
+            ]);
+            abort(404);
         }
 
-        $downloadName = $file->file_name ?: 'file';
-
-        return Storage::download($file->file_path, $downloadName);
+        return response()->download($absolute, $file->file_name ?: basename($absolute));
     }
 
     /**
@@ -380,46 +458,82 @@ class DatasetController extends Controller
             abort(404);
         }
 
-        $tempDir = 'temp';
-        Storage::makeDirectory($tempDir);
-
-        $safeBase = ($dataset->name ?: 'dataset');
-        $safeBase = preg_replace('/[^A-Za-z0-9_\-. ]+/', '', $safeBase) ?: 'dataset';
-        $zipRelative = $tempDir . '/' . $safeBase . '-' . Str::random(12) . '.zip';
-
-        $zipPath = Storage::path($zipRelative);
+        // Build ZIP in the system temp dir (most reliable in Docker).
+        // Avoids permission/mount issues on storage volumes.
+        $tmpBase = tempnam(sys_get_temp_dir(), 'dszip_');
+        if ($tmpBase === false) {
+            Log::error('ZIP creation failed: tempnam() returned false', ['dataset_id' => (int) $dataset->id]);
+            abort(500, 'Failed to create ZIP archive.');
+        }
+        $zipPath = $tmpBase . '.zip';
+        @rename($tmpBase, $zipPath);
 
         $zip = new \ZipArchive();
         $opened = $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         if ($opened !== true) {
+            Log::error('ZIP creation failed: open returned ' . var_export($opened, true) . ' path=' . $zipPath);
+            @unlink($zipPath);
             abort(500, 'Failed to create ZIP archive.');
         }
 
+        $added = 0;
         foreach ($dataset->files as $file) {
-            if (!$file->file_path || !Storage::exists($file->file_path)) {
+            if (!$file->file_path) {
                 continue;
             }
 
-            $absolute = Storage::path($file->file_path);
-            $nameInZip = $file->file_name ?: basename($absolute);
+            $absolute = $this->resolveAbsoluteFilePath($file->file_path);
+            if (!$absolute) {
+                Log::warning('ZIP skip: file missing/unreadable', [
+                    'dataset_id' => (int) $dataset->id,
+                    'file_id' => (int) $file->id,
+                    'stored_path' => (string) $file->file_path,
+                ]);
+                continue;
+            }
 
-            // Avoid duplicate names inside zip
+            $nameInZip = $file->file_name ?: basename($absolute);
             if ($zip->locateName($nameInZip) !== false) {
                 $nameInZip = Str::random(6) . '-' . $nameInZip;
             }
 
             $zip->addFile($absolute, $nameInZip);
+            $added++;
         }
 
         $zip->close();
 
+        Log::info('ZIP built', [
+            'dataset_id' => (int) $dataset->id,
+            'zip_path' => $zipPath,
+            'added' => $added,
+        ]);
+
+        if ($added < 1) {
+            // No readable files -> don't return a broken ZIP (prevents 500).
+            @unlink($zipPath);
+            Log::warning('ZIP download aborted: dataset has no readable files', [
+                'dataset_id' => (int) $dataset->id,
+            ]);
+            abort(404, 'No downloadable files found for this dataset.');
+        }
+
+        clearstatcache(true, $zipPath);
+        if (!file_exists($zipPath)) {
+            Log::error('ZIP file missing after close: ' . $zipPath . ' dataset=' . $dataset->id . ' added=' . $added);
+            @unlink($zipPath);
+            abort(500, 'ZIP file was not created.');
+        }
+
+        $safeBase = ($dataset->name ?: 'dataset');
+        $safeBase = preg_replace('/[^A-Za-z0-9_\-. ]+/', '', $safeBase) ?: 'dataset';
         $downloadZipName = $safeBase . '.zip';
 
-        // Count a successful authorized download attempt
         if (Schema::hasColumn('datasets', 'download_count')) {
             $dataset->increment('download_count');
         }
 
+        // Download the zip and delete it after sending.
         return response()->download($zipPath, $downloadZipName)->deleteFileAfterSend(true);
     }
 
@@ -621,6 +735,9 @@ class DatasetController extends Controller
             ], 422);
         }
 
+        $defaultDisk = config('filesystems.default', 'local');
+        $disk = Storage::disk($defaultDisk);
+
         $created = [];
 
         foreach ($uploadedFiles as $file) {
@@ -628,7 +745,8 @@ class DatasetController extends Controller
                 continue;
             }
 
-            $path = $file->store('datasets');
+            // Store explicitly on default disk
+            $path = $disk->putFile('datasets', $file);
 
             $extension = strtolower((string) $file->getClientOriginalExtension());
             $fileType = match ($extension) {
@@ -686,7 +804,19 @@ class DatasetController extends Controller
         $file = $dataset->files()->where('id', $fileId)->firstOrFail();
 
         if (!empty($file->file_path)) {
-            Storage::delete($file->file_path);
+            // Try delete on multiple disks
+            try {
+                $defaultDisk = config('filesystems.default', 'local');
+                if (Storage::disk($defaultDisk)->exists($file->file_path)) {
+                    Storage::disk($defaultDisk)->delete($file->file_path);
+                } elseif (Storage::disk('public')->exists($file->file_path)) {
+                    Storage::disk('public')->delete($file->file_path);
+                } elseif (Storage::exists($file->file_path)) {
+                    Storage::delete($file->file_path);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to delete physical file: ' . $file->file_path . ' error=' . $e->getMessage());
+            }
         }
 
         $file->delete();
@@ -718,12 +848,34 @@ class DatasetController extends Controller
 
         foreach ($dataset->files as $file) {
             if (!empty($file->file_path)) {
-                Storage::delete($file->file_path);
+                try {
+                    $defaultDisk = config('filesystems.default', 'local');
+                    if (Storage::disk($defaultDisk)->exists($file->file_path)) {
+                        Storage::disk($defaultDisk)->delete($file->file_path);
+                    } elseif (Storage::disk('public')->exists($file->file_path)) {
+                        Storage::disk('public')->delete($file->file_path);
+                    } elseif (Storage::exists($file->file_path)) {
+                        Storage::delete($file->file_path);
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to delete physical file during dataset destroyAjax: ' . $file->file_path . ' error=' . $e->getMessage());
+                }
             }
         }
 
         if (!empty($dataset->file_path)) {
-            Storage::delete($dataset->file_path);
+            try {
+                $defaultDisk = config('filesystems.default', 'local');
+                if (Storage::disk($defaultDisk)->exists($dataset->file_path)) {
+                    Storage::disk($defaultDisk)->delete($dataset->file_path);
+                } elseif (Storage::disk('public')->exists($dataset->file_path)) {
+                    Storage::disk('public')->delete($dataset->file_path);
+                } elseif (Storage::exists($dataset->file_path)) {
+                    Storage::delete($dataset->file_path);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to delete legacy dataset file during destroyAjax: ' . $dataset->file_path . ' error=' . $e->getMessage());
+            }
         }
 
         $dataset->files()->delete();

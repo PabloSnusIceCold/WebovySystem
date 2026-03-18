@@ -18,9 +18,7 @@ class Dataset extends Model
         'likes_count',
         'name',
         'description',
-        'file_path',
-        'file_type',
-        'file_size',
+        // file_path, file_type, file_size migrated to `files` table - no longer fillable here
     ];
 
     protected $casts = [
