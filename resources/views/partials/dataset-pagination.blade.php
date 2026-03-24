@@ -4,7 +4,6 @@
 
 @if (isset($datasets) && $datasets instanceof \Illuminate\Pagination\AbstractPaginator)
     <div class="mt-4 d-flex justify-content-center">
-        {{ $datasets->links() }}
+        {{ $datasets->appends(request()->query())->links() }}
     </div>
 @endif
-

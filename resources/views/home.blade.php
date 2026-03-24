@@ -193,6 +193,9 @@
                     }
                 }
 
+                // IMPORTANT: when changing layout/search/category we always restart at page 1
+                url.searchParams.delete('page');
+
                 return url;
             }
 
@@ -214,7 +217,6 @@
                     });
 
                     if (!res.ok) {
-                        // fallback to full navigation if something unexpected happens
                         window.location.href = url.toString();
                         return;
                     }
@@ -224,17 +226,12 @@
                     const layout = url.searchParams.get('layout') || 'cards';
                     cardsContainer.setAttribute('data-layout', layout);
 
-                    // Keep URL in sync (so refresh/share works)
                     window.history.replaceState({}, '', url.toString());
-
-                    // Fix active state
                     syncLayoutButtons(layout);
                 } catch (e) {
-                    // If aborted, silently ignore
                     if (e && e.name === 'AbortError') {
                         return;
                     }
-                    // fallback
                     window.location.href = (urlOverride instanceof URL ? urlOverride : buildUrlFromForm()).toString();
                 }
             }
@@ -242,12 +239,10 @@
             // Initial sync on load
             syncLayoutButtons(cardsContainer.getAttribute('data-layout') || 'cards');
 
-            // Trigger AJAX on category change
             categorySelect.addEventListener('change', function () {
                 fetchAndRender();
             });
 
-            // Keep normal GET submit for fallback; enhance with AJAX when possible
             form.addEventListener('submit', function (e) {
                 if (!window.fetch) {
                     return;
@@ -255,17 +250,14 @@
 
                 e.preventDefault();
 
-                // Detect which submit button triggered the submit (Reset vs Search)
                 const submitter = e.submitter || document.activeElement;
                 const isReset = submitter && submitter.getAttribute && submitter.getAttribute('name') === 'reset';
 
                 if (isReset) {
-                    // Clear UI fields
                     const searchInput = form.querySelector('input[name="search"]');
                     if (searchInput) searchInput.value = '';
                     if (categorySelect) categorySelect.value = '';
 
-                    // Build reset URL explicitly: keep layout, add reset=1
                     const resetUrl = new URL(form.action, window.location.origin);
                     const layoutInput = form.querySelector('input[name="layout"]');
                     const layout = (layoutInput && layoutInput.value) ? layoutInput.value : 'cards';
@@ -276,32 +268,49 @@
                     return;
                 }
 
-                // Normal search/filter submit
                 fetchAndRender();
             });
 
-            // Layout switch via links should also re-render with AJAX when possible
+            // Layout switch via links -> ALWAYS keep current form filters and reset page
             document.addEventListener('click', function (e) {
                 const link = e.target.closest('a[href]');
                 if (!link) return;
-
-                // Only handle clicks inside the layout switcher group
                 if (!link.closest('.btn-group[aria-label="Dataset view"]')) return;
-
                 if (!window.fetch) return;
 
-                // Prevent full reload
                 e.preventDefault();
 
                 const targetUrl = new URL(link.getAttribute('href'), window.location.origin);
 
-                // Sync hidden layout input
+                // Update hidden layout input so buildUrlFromForm includes new layout
                 const layoutInput = form.querySelector('input[name="layout"]');
-                if (layoutInput) {
-                    layoutInput.value = targetUrl.searchParams.get('layout') || 'cards';
-                }
+                const newLayout = targetUrl.searchParams.get('layout') || 'cards';
+                if (layoutInput) layoutInput.value = newLayout;
 
-                fetchAndRender(targetUrl);
+                // Build URL from form (preserves search/category) and force new layout
+                const url = buildUrlFromForm();
+                url.searchParams.set('layout', newLayout);
+
+                fetchAndRender(url);
+            });
+
+            // Pagination inside the dataset container should preserve current query (including search)
+            cardsContainer.addEventListener('click', function (e) {
+                const a = e.target.closest('a[href]');
+                if (!a) return;
+                if (!a.closest('.pagination')) return;
+                if (!window.fetch) return;
+
+                e.preventDefault();
+
+                const pageUrl = new URL(a.getAttribute('href'), window.location.origin);
+
+                // Keep current filters from form, but take the clicked page number
+                const url = buildUrlFromForm();
+                const page = pageUrl.searchParams.get('page');
+                if (page) url.searchParams.set('page', page);
+
+                fetchAndRender(url);
             });
 
             // --- AJAX #2: increment download count when ZIP download is triggered (event delegation) ---
