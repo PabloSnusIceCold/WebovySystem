@@ -6,7 +6,6 @@ use App\Models\Category;
 use App\Models\Dataset;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Dataset>
@@ -33,12 +32,6 @@ class DatasetFactory extends Factory
             'is_public' => true,
             'download_count' => 0,
             'likes_count' => 0,
-            // file_path je povinný stĺpec (legacy z 1-súborového datasetu). Pre testy stačí dummy hodnota.
-            'file_path' => 'datasets/' . Str::random(16) . '.txt',
-            'file_type' => 'TXT',
-            'file_size' => 1234,
-            'created_at' => now(),
-            'updated_at' => now(),
         ];
     }
 }
