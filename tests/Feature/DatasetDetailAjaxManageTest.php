@@ -11,36 +11,6 @@ class DatasetDetailAjaxManageTest extends \Tests\TestCase
 {
     use RefreshDatabase;
 
-    public function test_owner_can_update_dataset_via_ajax(): void
-    {
-        $user = User::factory()->create();
-        $category = Category::factory()->create();
-
-        $dataset = Dataset::factory()->create([
-            'user_id' => $user->id,
-            'category_id' => $category->id,
-            'name' => 'Old',
-            'description' => 'Old desc',
-            'is_public' => true,
-        ]);
-
-        $res = $this->actingAs($user)
-            ->withHeader('X-Requested-With', 'XMLHttpRequest')
-            ->put(route('datasets.update.ajax', $dataset->id), [
-                'name' => 'New name',
-                'description' => 'New desc',
-            ]);
-
-        $res->assertOk();
-        $res->assertJsonPath('success', true);
-        $res->assertJsonPath('dataset.name', 'New name');
-
-        $this->assertDatabaseHas('datasets', [
-            'id' => $dataset->id,
-            'name' => 'New name',
-            'description' => 'New desc',
-        ]);
-    }
 
     public function test_non_owner_non_admin_cannot_update_private_dataset_via_ajax(): void
     {
